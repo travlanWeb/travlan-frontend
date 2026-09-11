@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* @theme : Tailwind v4의 "디자인 토큰 등록소".
+   여기 등록한 값은 bg-primary, text-primary, rounded-tag 같은
+   유틸리티 클래스로 자동 생성됩니다. */
+@theme {
+  /* ===== 색상: Primary ===== */
+  /* 액션 요소(버튼, 링크, 강조 텍스트)에만 사용. 넓은 배경 금지 (지침 참고) */
+  --color-primary: #1D9E75;
+
+  /* ===== 색상: 가격대 3단계 =====
+     각 단계마다 배경색/글자색 한 쌍씩. 이름은 tier(단계)로 통일 */
+  --color-tier-budget-bg: #EAF3DE;    /* 저렴 - 배경 */
+  --color-tier-budget-text: #3B6D11;  /* 저렴 - 글자 */
+  --color-tier-standard-bg: #FAEEDA;  /* 일반 - 배경 */
+  --color-tier-standard-text: #854F0B;/* 일반 - 글자 */
+  --color-tier-premium-bg: #EEEDFE;   /* 프리미엄 - 배경 */
+  --color-tier-premium-text: #534AB7; /* 프리미엄 - 글자 */
+
+  /* ===== Radius: 위계별 =====
+     Tailwind 기본 --radius-* 변수를 재정의하는 대신
+     우리 프로젝트 전용 이름으로 등록 (혼동 방지) */
+  --radius-tag: 4px;      /* 태그 */
+  --radius-btn: 8px;      /* 버튼 */
+  --radius-card: 12px;    /* 카드 */
+  --radius-modal: 20px;   /* 모달 */
+  /* 칩/진행바는 'pill' 형태 -> 별도 토큰 없이 rounded-full(Tailwind 기본 제공) 사용 예정 */
+}
