@@ -1,6 +1,7 @@
 // useState: 컴포넌트 안에서 바뀌는 값을 다루는 React의 가장 기본적인 훅
 // 여기서는 "지금 선택된 여행지가 무엇인지"를 이 페이지 안에서만 기억하면 되므로
 // (다른 페이지/컴포넌트가 공유할 필요 없음) Zustand가 아니라 useState로 충분함
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Place } from '../../entities/place/model/types'
@@ -11,18 +12,11 @@ import BagPanel from '../../widgets/bag-panel/BagPanel'
 import { useBagStore } from '../../entities/bag/model/useBagStore'
 
 export default function MainPage() {
-  const navigate = useNavigate()
 
-  // 지금 선택된 장소. 처음엔 아무것도 선택 안 된 상태(null)
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
-
-  // 타임라인으로 보내기 버튼에서 여행가방 내용이 비어있는지 확인하기 위해 구독
-  const bagItems = useBagStore((state) => state.items)
-
-  // "타임라인으로 보내기" 버튼 클릭 시 실행
-  // 지금은 실제 데이터 전달 로직(API 저장 등)이 없어서 페이지 이동만 함
-  // TODO: 백엔드 연동 후 - 여행가방 내용을 실제로 timeline(visits)에 등록하는 API 호출 필요
-  const handleSendToTimeline = () => {
+  const navigate = useNavigate() // navigate 에 페이지 이동 함수 담기
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null) // 컴포넌트가 화면에 그려질 때마다 React 내부에 값 하나 새로 등록/유지
+  const bagItems = useBagStore((state) => state.items) // useBagStore 에서 items 만 가져옴, 다른 컴포넌트에서 addItem 호출해서 뭔가 추가되면 Zustand 가 자동 렌더링, bagItems가 자동 갱신됨 (구독 형태)
+  const handleSendToTimeline = () => { // timeline 페이지로 이동하는 함수 정의
     navigate('/timeline')
   }
 
@@ -37,14 +31,16 @@ export default function MainPage() {
       {/* 여행지 목록 - 클릭하면 selectedPlace만 바뀜, 담기 버튼 없음 */}
       <div className="w-64 flex flex-col gap-2">
         <h2 className="font-semibold mb-1">여행지 목록</h2>
-        {mockPlaces.map((place) => (
+
+        {mockPlaces.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
           <PlaceListItem
             key={place.id}
             place={place}
-            isSelected={selectedPlace?.id === place.id}
-            onClick={() => setSelectedPlace(place)}
+            isSelected={selectedPlace?.id === place.id} // 옵셔널 체이닝 - null 일 떄 에러 방지하기 위해서 있으면 id 그냥 읽고, 없으면 undefined 반환해라
+            onClick={() => setSelectedPlace(place)} // 클릭 발생 시 코드 실행 예약
           />
         ))}
+
       </div>
 
       {/* 여행지 상세 - 담기 버튼이 여기 있음 */}
@@ -58,7 +54,7 @@ export default function MainPage() {
         <BagPanel />
         <button
           onClick={handleSendToTimeline}
-          disabled={bagItems.length === 0}
+          disabled={bagItems.length === 0} // true면 버튼 눌리지 않도록 비활성화 처리함 -> 여행가방에 장소가 없으면 비활성화, 있으면 활성화
         >
           타임라인으로 보내기
         </button>

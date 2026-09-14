@@ -3,7 +3,7 @@ import type { Place } from "../model/types";
 interface PlaceListItemProps {
     place: Place
     isSelected: boolean
-    onClick: () => void
+    onClick: () => void // 함수 모양만 정의하고 실제 동작은 부모가 채워넣는다
 }
 
 export default function PlaceListItem({ place, isSelected, onClick }: PlaceListItemProps) {

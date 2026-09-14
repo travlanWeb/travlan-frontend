@@ -1,8 +1,8 @@
 import { useBagStore } from "../../entities/bag/model/useBagStore";
 
 export default function BagPanel() {
-    const items = useBagStore((state) => state.items)
-    const removeItem = useBagStore((state) => state.removeItem)
+    const items = useBagStore((state) => state.items) // 구독
+    const removeItem = useBagStore((state) => state.removeItem) // removeItem 함수 정의
 
     return (
     <div>
