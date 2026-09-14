@@ -1,25 +1,52 @@
 // widgets 레이어 -> 여러 페이지 상단에 공통으로 올라가는 네비게이션 조각, 기존 헤더와 별개
 // 홈 화면에 우선 적용
 
-interface NavbarProps {
-    alwaysOpaque?: boolean // 배경을 항상 불투명한 흰색으로 보여줄지 여부
-    onNavigateMap?: () => void // 지도 페이지로 이동할 때 실행할 함수
-    onCreateTravel?: () => void // // "여행 만들기" 버튼 클릭 시 실행할 함수 (지금은 임시로 콘솔 로그만 찍음)
-}
+// Navbar 클릭 시 새로고침 없이 화면 전환, 현재 경로와 일치 여부 알려주는 컴포넌트
+// 기존 Header 가 쓰던 방식과 통합
 
-export default function Navbar({ alwaysOpaque = false, onNavigateMap, onCreateTravel }: NavbarProps) {
-    return(
+import { NavLink } from "react-router-dom";
+import { handleCreateTravel } from "../../../shared/lib/tempHandlers";
+
+const navItems = [
+    { to: '/', label: '홈', end: true },
+    { to: '/travels/1/map', label: '지도' },
+    { to: '/timeline', label: '타임라인' },
+    { to: '/community', label: '커뮤니티' },
+    { to: '/mypage', label: '마이페이지' }
+]
+
+export default function Navbar() {
+    return (
         <header>
-            {/* {워드마크 자리} */}
-            <span>TRAVLAN</span>
+            <NavLink to="/">TRAVLAN</NavLink>
             <nav>
+                {navItems.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        end={item.end}
+                        className={({ isActive }) =>
+                            `text-[18px] transition-colors ${isActive ? 'text-deep-ink font-semibold' : 'text-cool-ash'
+                            }`
+                        }
+                    >
+                        {item.label}
+                    </NavLink>
+                ))}
+            </nav>
+
+            <div>
+                <NavLink
+                    to="/login">
+                    로그인
+                </NavLink>
+
                 <button
                 type="button"
-                onClick={onNavigateMap}
-                >
+                onClick={handleCreateTravel}>
                     여행 만들기
                 </button>
-            </nav>
+            </div>
         </header>
     )
 }
