@@ -8,6 +8,7 @@ import TimelinePage from '../pages/timeline/TimelinePage'
 import CommunityPage from '../pages/community/CommunityPage'
 import MyPage from '../pages/mypage/MyPage'
 import LoginPage from '../pages/login/LoginPage'
+import SignupPage from '../pages/login/SignupPage'
 
 function RootLayout() {
   return (
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { path: 'community', element: <CommunityPage /> },
       { path: 'mypage', element: <MyPage /> },
       { path: 'login', element: <LoginPage /> },
+      { path: 'signup', element: <SignupPage /> },
     ],
   },
 ])
