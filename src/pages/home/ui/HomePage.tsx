@@ -1,7 +1,5 @@
-import { useNavigate } from 'react-router-dom'
-import Navbar from '../../../widgets/navbar/ui/Navbar'
+import { handleCreateTravel } from '../../../shared/lib/tempHandlers'
 
-// 서비스 소개 섹션 내용
 const features = [
   { title: '지도에서 필터링', desc: '원하는 조건으로 여행지를 검색하고 골라보세요.' },
   { title: '여행가방에 담기', desc: '마음에 드는 여행지를 여행가방에 모아두세요.' },
@@ -9,31 +7,10 @@ const features = [
   { title: '커뮤니티에서 공유', desc: '완성한 여행 일정을 다른 사람들과 나눠보세요.' },
 ]
 
-export default function HomePage() {
-    const navigate = useNavigate()
-
-    // TODO: 여행 생성 API 연동 후 실제 생성된 travelId로 교체 필요
-    // 백엔드 연동 전이라 하드코딩
-    const TEMP_TRAVEL_ID = '1'
-
-    // 지도로 이동
-    const handleNavigateMap = () => {
-        navigate(`/travels/${TEMP_TRAVEL_ID}/map`)
-    }
-
-    // 여행 만들기
-    const handleCreateTravel = () => {
-        console.log('여행 만들기 클릭됨')
-    }
-
-    return (
-        <div>
-            <Navbar
-            alwaysOpaque={false}
-            onNavigateMap={handleNavigateMap}
-            onCreateTravel={handleCreateTravel}
-            />
-            {/* ===== 1. 히어로 섹션 ===== */}
+function HomePage() {
+  return (
+    <div className="w-full">
+      {/* ===== 1. 히어로 섹션 ===== */}
       <section className="w-full bg-pure-white px-10 py-24 flex flex-col items-center text-center gap-6">
         <h1 className="text-[60px] font-bold text-deep-ink leading-tight">
           예산 안에서, 완벽한 여행.
@@ -42,8 +19,6 @@ export default function HomePage() {
           지도에서 여행지를 고르고, 여행가방에 담아 타임라인으로 완성하세요.
         </p>
 
-        {/* 장식용 SVG: 실제 지도 데이터가 아니라 "경로선" 느낌만 주는 일러스트
-            path의 d 속성: 곡선을 그리는 좌표 명령어 (Q는 2차 베지어 곡선, T는 이어지는 곡선) */}
         <svg width="400" height="120" viewBox="0 0 400 120" className="my-2">
           <path
             d="M20 100 Q 100 20, 200 60 T 380 30"
@@ -83,7 +58,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 3. 강조 섹션 (유일하게 색이 들어가는 곳) ===== */}
+      {/* ===== 3. 강조 섹션 ===== */}
       <section className="w-full bg-clay-ember px-10 py-16 text-pure-white text-center">
         <h2 className="text-[37px] font-bold mb-4">예산 관리, 이렇게 쉬워집니다</h2>
         <p className="text-[18px]">
@@ -91,7 +66,7 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ===== 4. 다크 섹션 (커뮤니티 소개) ===== */}
+      {/* ===== 4. 다크 섹션 ===== */}
       <section className="w-full bg-midnight-hull px-10 py-20 flex justify-end">
         <div className="max-w-[500px] text-right text-pure-white">
           <p className="text-[23px] font-bold mb-3">
@@ -115,3 +90,5 @@ export default function HomePage() {
     </div>
   )
 }
+
+export default HomePage
