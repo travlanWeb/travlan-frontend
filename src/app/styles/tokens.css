@@ -1,0 +1,21 @@
+/* 홈 화면부터 적용되는 "확정 디자인 방향" 토큰
+   기존 index.css의 그린 계열 토큰(--color-primary 등)은
+   지도 페이지가 아직 쓰고 있어서 삭제하지 않고 남겨둠.
+   이름이 겹치지 않아 두 세트가 공존해도 충돌 없음. */
+@theme {
+  --color-deep-ink: #000d10;      /* 본문 텍스트, 필드 버튼, 아이콘, 푸터 배경 */
+  --color-pure-white: #ffffff;    /* 캔버스, 카드 배경 */
+  --color-cool-ash: #8e8e95;      /* 보조 텍스트, 비활성 nav */
+  --color-pebble: #d5d3d4;        /* 헤어라인 구분선 */
+  --color-midnight-hull: #0f0f1c; /* 다크 섹션 배경 */
+  --color-clay-ember: #bc7155;    /* 유일한 웜 액센트, 화면당 한 곳만 */
+
+  --text-hero: 60px;
+  --text-heading: 37px;
+  --text-subheading: 23px;
+  --text-body: 18px;
+  --leading-body: 29px; /* 18px 기준 1.61 비율 */
+
+  --radius-pill: 1000px;
+  --radius-flat: 0px; /* 카드는 각지게, 그림자 없음 */
+}
