@@ -14,7 +14,9 @@ function RootLayout() {
   return (
     <div>
       <Navbar />
-      <Outlet />
+      <div className="pt-[68px]">
+        <Outlet />
+      </div>
     </div>
   )
 }
