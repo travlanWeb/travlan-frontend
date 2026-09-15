@@ -65,7 +65,7 @@ export default function Navbar() {
                     ))}
                 </nav>
 
-                {/* 그룹 3: 로그인 + CTA 버튼 - 메뉴 그룹과는 별개로, 자기들끼리는 좁은 간격 */}
+                {/* 그룹 3: 로그인 + CTA 버튼 - 메뉴 그룹과는 별개로, 자기들끼리는 좁은 간격, shrink 0: 줄어들지 않도록 함 */}
                 <div className="flex items-center gap-5 shrink-0">
                     <NavLink
                         to="/login"

@@ -10,22 +10,25 @@ import PlaceListItem from '../../entities/place/ui/PlaceListItem'
 import PlaceDetail from '../../entities/place/ui/PlaceDetail'
 import BagPanel from '../../widgets/bag-panel/BagPanel'
 import { useBagStore } from '../../entities/bag/model/useBagStore'
+import KakaoMap from '../../widgets/kakao-map/ui/KakaoMap' // 추가
+
 
 export default function MainPage() {
 
   const navigate = useNavigate() // navigate 에 페이지 이동 함수 담기
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null) // 컴포넌트가 화면에 그려질 때마다 React 내부에 값 하나 새로 등록/유지
   const bagItems = useBagStore((state) => state.items) // useBagStore 에서 items 만 가져옴, 다른 컴포넌트에서 addItem 호출해서 뭔가 추가되면 Zustand 가 자동 렌더링, bagItems가 자동 갱신됨 (구독 형태)
+
   const handleSendToTimeline = () => { // timeline 페이지로 이동하는 함수 정의
     navigate('/timeline')
   }
 
   return (
     <div className="p-8 flex gap-6">
-      {/* 지도 자리 - 실제 지도 라이브러리는 나중에 붙임.
-          지금은 목록 클릭 방식이라 화면 비중을 줄여서 배치 */}
-      <div className="w-72 bg-gray-100 rounded-card flex items-center justify-center text-gray-400 text-sm">
-        지도 영역 (준비 중)
+      {/* 지도 영역 - 자리표시자를 실제 KakaoMap으로 교체
+          핀 클릭 시 목록 클릭과 동일하게 selectedPlace를 바꿔줌 */}
+      <div className="w-72 h-[500px] rounded-card overflow-hidden">
+        <KakaoMap places={mockPlaces} onMarkerClick={setSelectedPlace} />
       </div>
 
       {/* 여행지 목록 - 클릭하면 selectedPlace만 바뀜, 담기 버튼 없음 */}
