@@ -26,7 +26,7 @@ export default function MainPage() {
   const [endDate, setEndDate] = useState('')
   const [totalBudget, setTotalBudget] = useState(0)
 
-  const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
+  // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
   const canProceedToTimeline = name && totalBudget // timeline 으로 넘길 수 있는지 판단하는 함수
 
   // navigate 파트
