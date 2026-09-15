@@ -10,8 +10,6 @@ import { handleCreateTravel } from "../../../shared/lib/tempHandlers";
 
 const navItems = [
     { to: '/', label: '홈', end: true },
-    { to: '/travels/1/map', label: '지도' },
-    { to: '/timeline', label: '타임라인' },
     { to: '/community', label: '커뮤니티' },
     { to: '/mypage', label: '마이페이지' }
 ]
