@@ -5,8 +5,7 @@
 // 기존 Header 가 쓰던 방식과 통합
 
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation } from "react-router-dom";
-import { handleCreateTravel } from "../../../shared/lib/tempHandlers";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux'
 import { logout } from '../../../entities/auth/model/authSlice';
@@ -24,7 +23,8 @@ export default function Navbar() {
     const isHome = location.pathname === '/'
     const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
     const [scrolled, setScrolled] = useState(false)
-      const dispatch = useDispatch()
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
 
     useEffect(() => {
@@ -81,7 +81,7 @@ export default function Navbar() {
 
                     <button
                         type="button"
-                        onClick={handleCreateTravel}
+                        onClick={() => navigate('/travels/new/map')}
                         className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold whitespace-nowrap hover:opacity-80 transition-opacity"
                     >
                         여행 만들기
