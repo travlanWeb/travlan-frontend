@@ -1,21 +1,26 @@
 import { useState } from 'react'
 import { api } from '../../shared/api/axiosInstance'
+import { useDispatch } from 'react-redux'
+import { login } from '../../entities/auth/model/authSlice'
 
 
 export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
   const [result, setResult] = useState('')
+  const dispatch = useDispatch() // 인자 없이 받아옴
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
       const response = await api.post('/auth/login', { email, password }) // swagger 바탕으로 수정해야 함
-
+      dispatch(login(response.data)) // dispatch 함수 위에서 정의 후 response.data 를 login에 넘겨줌, redux devtools 사용하여 결과 편리하게 확인 가ㄴ,ㅇ
       setResult(JSON.stringify(response.data))
-    } catch (error) {
+    }
+
+    catch (error) {
       if (error && typeof error === 'object' && 'message' in error) {
         setResult(`에러: ${(error as Error).message}`)
       }

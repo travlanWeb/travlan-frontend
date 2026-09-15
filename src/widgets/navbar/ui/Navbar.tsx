@@ -7,6 +7,10 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from "react-router-dom";
 import { handleCreateTravel } from "../../../shared/lib/tempHandlers";
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux'
+import { logout } from '../../../entities/auth/model/authSlice';
+import type { RootState } from '../../../app/store'
 
 const navItems = [
     { to: '/', label: '홈', end: true },
@@ -18,8 +22,10 @@ export default function Navbar() {
 
     const location = useLocation() // 현재 주소를 읽어오는 훅 (react-router-dom 이 제공함)
     const isHome = location.pathname === '/'
-
+    const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
     const [scrolled, setScrolled] = useState(false)
+      const dispatch = useDispatch()
+
 
     useEffect(() => {
 
@@ -35,8 +41,8 @@ export default function Navbar() {
     return (
         <header
             className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${isOpaque
-                    ? 'bg-pure-white/95 backdrop-blur-md border-b border-pebble'
-                    : 'bg-transparent'
+                ? 'bg-pure-white/95 backdrop-blur-md border-b border-pebble'
+                : 'bg-transparent'
                 }`}
         >
             {/* justify-between으로 3개 그룹(로고 / 메뉴 / 우측 액션)을 양 끝 + 중앙으로 명확히 분리 */}
@@ -65,12 +71,13 @@ export default function Navbar() {
 
                 {/* 그룹 3: 로그인 + CTA 버튼 - 메뉴 그룹과는 별개로, 자기들끼리는 좁은 간격, shrink 0: 줄어들지 않도록 함 */}
                 <div className="flex items-center gap-5 shrink-0">
-                    <NavLink
-                        to="/login"
-                        className="text-deep-ink text-sm font-semibold whitespace-nowrap"
-                    >
-                        로그인
-                    </NavLink>
+                    {isLoggedIn ? (
+                        <button
+                        type="button"
+                        onClick={() => dispatch(logout())}>로그아웃</button>
+                    ) : (
+                        <NavLink to="/login">로그인</NavLink>
+                    )}
 
                     <button
                         type="button"
