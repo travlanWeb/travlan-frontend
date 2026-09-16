@@ -10,8 +10,14 @@ import { useBagStore } from "../../../entities/bag/model/useBagStore"
 import { getUserIdFromToken } from "../../../entities/auth/model/getUserId"
 import { api } from "../../../shared/api/axiosInstance"
 import { useTravelDraftStore } from "../../../entities/travel/model/useTravelDraftStore"
+import { useNavigate } from "react-router-dom"
+
+
+
 
 export default function TimelinePage() {
+
+    const navigate = useNavigate()
 
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
@@ -25,8 +31,12 @@ export default function TimelinePage() {
 
     const bags = bagItems.map((place) => ({ placeId: place.id })) // API 요청 형태로 변환
 
+
+
+
+
     // 저장 함수
-    const handleSave = async(endpoint: string) => {
+    const handleSave = async (endpoint: string) => {
 
         if (!accessToken) return // 방어 코드
 
@@ -51,6 +61,7 @@ export default function TimelinePage() {
         try {
             const response = await api.post(endpoint, payload)
             console.log("저장 성공", response.data)
+            navigate('/mypage')
         } catch (error) {
             console.error("저장 실패", error)
         }
@@ -148,7 +159,7 @@ export default function TimelinePage() {
                 <button
                     onClick={() => handleSave('/travels')}
                     className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">여행 저장하기</button>
-                
+
             </div>
         </div>
     )
