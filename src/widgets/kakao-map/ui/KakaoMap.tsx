@@ -1,5 +1,8 @@
-import { Map, MapMarker } from 'react-kakao-maps-sdk'
+import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk'
 import type { Place } from '../../../entities/place/model/types'
+import { useBagStore } from '../../../entities/bag/model/useBagStore'
+
+// customOverlayMap: 기본 핀 모양이 아닌 커스텀 html 그대로 얹을 수 있게 한 컴포넌트
 
 interface KakaoMapProps {
   places: Place[]
@@ -11,8 +14,10 @@ interface KakaoMapProps {
 function KakaoMap({ places, onMarkerClick }: KakaoMapProps) {
   // 지도 초기 중심 좌표 - 장소가 하나 이상 있으면 첫 번째 장소를 기준으로,
   // 없으면 서울 시청 근처를 기본값으로 (임시 fallback)
+  const bagItems = useBagStore((state) => state.items)
+
   const center = places.length > 0
-    ? { lat: places[0].latitude, lng: places[0].longitude }
+    ? { lat: places[10].latitude, lng: places[10].longitude }
     : { lat: 37.5665, lng: 126.9780 }
 
   return (
@@ -21,15 +26,36 @@ function KakaoMap({ places, onMarkerClick }: KakaoMapProps) {
       style={{ width: '100%', height: '100%' }}
       level={8} // 확대/축소 정도 - 숫자가 클수록 더 넓은 범위가 보임
     >
-      {places.map((place) => (
-        <MapMarker
+      {places.map((place) => {
+        const bagIndex = bagItems.findIndex((item) => item.id === place.id)
+        const isInBag = bagIndex !== -1
+
+        if (isInBag) {
+          // 담겨있는 장소
+          return (
+            <CustomOverlayMap
+              key={place.id}
+              position={{ lat: place.latitude, lng: place.longitude }}
+            >
+              <div
+                onClick={() => onMarkerClick?.(place)}
+                className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center cursor-pointer"
+              >
+                {bagIndex + 1}
+              </div>
+            </CustomOverlayMap>
+          )
+        }
+
+        // 안 담겨있는 장소 -> 기본 마커로 표시하기
+        return (
+          <MapMarker
           key={place.id}
-          position={{ lat: place.latitude, lng: place.longitude }}
+          position={{ lat: place.latitude, lng: place.longitude}}
           onClick={() => onMarkerClick?.(place)}
-          // onMarkerClick이 undefined일 수도 있어서 옵셔널 체이닝(?.) 사용
-          // - 이전에 PlaceDetail에서 배운 것과 같은 이유로 안전하게 호출
-        />
-      ))}
+          />
+        )
+      })}
     </Map>
   )
 }
