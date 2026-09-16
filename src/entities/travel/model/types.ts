@@ -30,3 +30,41 @@ export interface TravelCard {
     endDate: string
     updatedAt: string
 }
+
+// bags 배열 안의 항목 하나
+export interface TravelBagItem {
+    id: number
+    placeId: string
+    placeName: string
+    address: string
+    latitude: number
+    longitude: number
+}
+
+
+// visits 배열 안의 항목 하나
+export interface TravelVisitItem {
+    id: number
+    day: number
+    cost: number
+    visitOrder: number
+    startTime: string
+    endTime: string
+    placeId: number
+    name: string
+    address: string
+    latitude: number
+    longitude: number
+}
+
+// 상세 조회 응답 전체
+export interface TravelDetail {
+    id: number
+    name: string
+    totalBudget: number
+    startDate: string
+    endDate: string
+    updatedAt: string
+    bags: TravelBagItem[]
+    visits: TravelVisitItem[]
+}
