@@ -5,9 +5,12 @@
 import { useState, useEffect } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
 import { api } from "../../../shared/api/axiosInstance"
+import TravelDetailModal from "../../../widgets/travel-detail-modal/ui/TravelDetailModal"
 
 
 export default function CommunityPage() {
+
+  const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null) // modal
 
   const [travels, setTravels] = useState<TravelCard[]>([]) // 받아온 데이터 담기
 
@@ -40,7 +43,9 @@ export default function CommunityPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {travels.map((travel) => (
-          <div key={travel.id} className="border border-gray-200 rounded-card p-4">
+          <div
+          onClick={() => setSelectedTravelId(travel.id)} 
+          key={travel.id} className="border border-gray-200 rounded-card p-4">
             <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
             <p className="text-sm text-gray-500 mb-1">
               {travel.startDate} ~ {travel.endDate}
@@ -51,6 +56,8 @@ export default function CommunityPage() {
           </div>
         ))}
       </div>
+      
+      <TravelDetailModal travelId={selectedTravelId} onClose={() => setSelectedTravelId(null)}/>
     </div>
   )
 }
