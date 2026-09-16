@@ -22,7 +22,7 @@ export default function TimelinePage() {
     // accessToken 가져오기
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
     const { name, startDate, endDate, totalBudget } = useTravelDraftStore()
-    
+
     const bags = bagItems.map((place) => ({ placeId: place.id })) // API 요청 형태로 변환
 
     // 저장 함수
@@ -32,6 +32,12 @@ export default function TimelinePage() {
 
         const userId = getUserIdFromToken(accessToken)
 
+        const formattedVisits = visits.map((visit) => ({
+            ...visit,
+            startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
+            endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
+        }))
+
         const payload = {
             userId,
             name,
@@ -39,7 +45,7 @@ export default function TimelinePage() {
             startDate,
             endDate,
             bags,
-            visits,
+            visits: formattedVisits,
         }
 
         try {
@@ -136,8 +142,8 @@ export default function TimelinePage() {
                     지도 영역 준비 중
                 </div>
                 <button
-                onClick={handleSave}
-                className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">여행 저장하기</button>
+                    onClick={handleSave}
+                    className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">여행 저장하기</button>
             </div>
         </div>
     )

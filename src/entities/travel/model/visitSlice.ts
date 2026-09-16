@@ -13,7 +13,10 @@ const visitSlice = createSlice({
     name: 'visit',
     initialState,
     reducers: {
+        // 중복 요청으로 인한 방어 로직 추가함
         addVisit: (state, action) => {
+            const alreadyExists = state.items.some((item) => item.placeId === action.payload.placeId)
+            if (alreadyExists) return
             state.items.push(action.payload)
         },
 
