@@ -37,10 +37,17 @@ const authSlice = createSlice({
             localStorage.setItem('accessToken', action.payload.accessToken)
             localStorage.setItem('refreshToken', action.payload.refreshToken)
             localStorage.setItem('isLoggedIn', 'true')
+        },
+
+        refreshTokens: (state, action) => {
+            state.accessToken = action.payload.accessToken
+            state.refreshToken = action.payload.refreshToken
+            localStorage.setItem('accessToken', action.payload.accessToken)
+            localStorage.setItem('refreshToken', action.payload.refreshToken)
         }
     }
 })
 
 // 만든 2개의 액션 export 하기
-export const { login, logout } = authSlice.actions
+export const { login, logout, refreshTokens } = authSlice.actions
 export default authSlice.reducer
