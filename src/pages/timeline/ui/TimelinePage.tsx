@@ -7,6 +7,9 @@ import { useDispatch, useSelector } from "react-redux"
 import { addVisit, updateVisit } from "../../../entities/travel/model/visitSlice"
 import type { RootState } from "../../../app/store"
 import { useBagStore } from "../../../entities/bag/model/useBagStore"
+import { getUserIdFromToken } from "../../../entities/auth/model/getUserId"
+import { api } from "../../../shared/api/axiosInstance"
+import { useTravelDraftStore } from "../../../entities/travel/model/useTravelDraftStore"
 
 export default function TimelinePage() {
 
@@ -16,6 +19,45 @@ export default function TimelinePage() {
 
     const travel = mockTravel // api 연동 필요
 
+    // accessToken 가져오기
+    const accessToken = useSelector((state: RootState) => state.auth.accessToken)
+    const { name, startDate, endDate, totalBudget } = useTravelDraftStore()
+
+    const bags = bagItems.map((place) => ({ placeId: place.id })) // API 요청 형태로 변환
+
+    // 저장 함수
+    const handleSave = async () => {
+
+        if (!accessToken) return // 방어
+
+        const userId = getUserIdFromToken(accessToken)
+
+        const formattedVisits = visits.map((visit) => ({
+            ...visit,
+            startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
+            endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
+        }))
+
+        const payload = {
+            userId,
+            name,
+            totalBudget,
+            startDate,
+            endDate,
+            bags,
+            visits: formattedVisits,
+        }
+
+        try {
+            const response = await api.post('/travels', payload)
+            console.log("저장 성공", response.data)
+        } catch (error) {
+            console.error("저장 실패", error)
+        }
+    }
+
+
+    // 
     useEffect(() => {
         bagItems.forEach((place, index) => {
             dispatch(addVisit({ // dispatch 호출 -> addVisit으로 만든 내용을 실제 store 에 전달해서 처리시킴
@@ -55,38 +97,38 @@ export default function TimelinePage() {
                                 <p className="font-semibold">{place.name}</p>
 
                                 <input
-                                type="number"
-                                placeholder="며칠째"
-                                value={visit.day}
-                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'day', value: Number(e.target.value) }))}
+                                    type="number"
+                                    placeholder="며칠째"
+                                    value={visit.day}
+                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'day', value: Number(e.target.value) }))}
                                 />
 
                                 <input
-                                type="number"
-                                placeholder="얼마"
-                                value={visit.cost}
-                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
+                                    type="number"
+                                    placeholder="얼마"
+                                    value={visit.cost}
+                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
                                 />
 
                                 <input
-                                type="number"
-                                placeholder="몇 번째"
-                                value={visit.visitOrder}
-                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'visitOrder', value: Number(e.target.value) }))}
+                                    type="number"
+                                    placeholder="몇 번째"
+                                    value={visit.visitOrder}
+                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'visitOrder', value: Number(e.target.value) }))}
                                 />
 
                                 <input
-                                type="time"
-                                placeholder="시작 시각"
-                                value={visit.startTime}
-                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: e.target.value }))}
+                                    type="time"
+                                    placeholder="시작 시각"
+                                    value={visit.startTime}
+                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: e.target.value }))}
                                 />
 
                                 <input
-                                type="time"
-                                placeholder="끝나는 시각"
-                                value={visit.endTime}
-                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
+                                    type="time"
+                                    placeholder="끝나는 시각"
+                                    value={visit.endTime}
+                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
                                 />
 
                             </div>
@@ -99,7 +141,10 @@ export default function TimelinePage() {
                 <div className="w-72 border border-gray-200 rounded-card p-4 text-gray-400 text-sm text-center">
                     지도 영역 준비 중
                 </div>
+                <button
+                    onClick={handleSave}
+                    className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">여행 저장하기</button>
             </div>
-            </div>
-            )
+        </div>
+    )
 }
