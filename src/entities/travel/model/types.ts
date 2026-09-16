@@ -21,3 +21,12 @@ export interface Visit {
     startTime: string
     endTime: string
 }
+
+export interface TravelCard {
+    id: number
+    name: string
+    totalBudget: number
+    startDate: string
+    endDate: string
+    updatedAt: string
+}
