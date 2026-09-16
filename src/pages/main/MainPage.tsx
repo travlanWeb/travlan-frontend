@@ -13,6 +13,7 @@ import { useBagStore } from '../../entities/bag/model/useBagStore'
 import KakaoMap from '../../widgets/kakao-map/ui/KakaoMap'
 import { useEffect } from 'react'
 import { mockTravel } from '../../entities/travel/model/mockTravel'
+import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
 
 
 export default function MainPage() {
@@ -21,10 +22,13 @@ export default function MainPage() {
   const { travelId } = useParams()
   const isNewTravel = travelId === 'new' // travel id 가 new 이면 newTravel 확인
 
-  const [name, setName] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [totalBudget, setTotalBudget] = useState(0)
+  // const [name, setName] = useState('')
+  // const [startDate, setStartDate] = useState('')
+  // const [endDate, setEndDate] = useState('')
+  // const [totalBudget, setTotalBudget] = useState(0)
+
+  // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
+  const {name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget} = useTravelDraftStore()
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
   const canProceedToTimeline = name && totalBudget // timeline 으로 넘길 수 있는지 판단하는 함수

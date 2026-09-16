@@ -1,9 +1,33 @@
 // 백엔드 연동 전 목업 데이터 넣어둠
+// visits 가져오기 추가(9/16)
 
 import { mockTravel } from "../../../entities/travel/model/mockTravel"
+import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { addVisit, updateVisit } from "../../../entities/travel/model/visitSlice"
+import type { RootState } from "../../../app/store"
+import { useBagStore } from "../../../entities/bag/model/useBagStore"
 
 export default function TimelinePage() {
+
+    const dispatch = useDispatch()
+    const bagItems = useBagStore((state) => state.items)
+    const visits = useSelector((state: RootState) => state.visit.items)
+
     const travel = mockTravel // api 연동 필요
+
+    useEffect(() => {
+        bagItems.forEach((place, index) => {
+            dispatch(addVisit({ // dispatch 호출 -> addVisit으로 만든 내용을 실제 store 에 전달해서 처리시킴
+                placeId: place.id,
+                day: 1,
+                cost: place.price ?? 0,
+                visitOrder: index + 1,
+                startTime: '',
+                endTime: '',
+            }))
+        })
+    }, []) // 의존성 배열 [] : 페이지 처음 열릴 때 딱 한 번만 실행되도록
 
     return (
         <div className="max-w-[1200px] mx-auto px-10 py-8">
@@ -21,7 +45,53 @@ export default function TimelinePage() {
 
             <div className="flex gap-6">
                 <div className="w-64 border border-gray-200 rounded-card p-4 text-gray-400 text-center">
-                    여행가방 영역 준비 중...
+                    {bagItems.map((place) => {
+
+                        const visit = visits.find((v) => v.placeId === place.id)
+                        if (!visit) return null
+
+                        return (
+                            <div key={place.id} className="mb-4 pb-4 border-b">
+                                <p className="font-semibold">{place.name}</p>
+
+                                <input
+                                type="number"
+                                placeholder="며칠째"
+                                value={visit.day}
+                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'day', value: Number(e.target.value) }))}
+                                />
+
+                                <input
+                                type="number"
+                                placeholder="얼마"
+                                value={visit.cost}
+                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
+                                />
+
+                                <input
+                                type="number"
+                                placeholder="몇 번째"
+                                value={visit.visitOrder}
+                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'visitOrder', value: Number(e.target.value) }))}
+                                />
+
+                                <input
+                                type="time"
+                                placeholder="시작 시각"
+                                value={visit.startTime}
+                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: e.target.value }))}
+                                />
+
+                                <input
+                                type="time"
+                                placeholder="끝나는 시각"
+                                value={visit.endTime}
+                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
+                                />
+
+                            </div>
+                        )
+                    })}
                 </div>
                 <div className="flex-1 border border-gray-200 rounded-card p-4 text-gray-400 text-sm text-center">
                     일정 목록 영역 준비 중
@@ -30,6 +100,6 @@ export default function TimelinePage() {
                     지도 영역 준비 중
                 </div>
             </div>
-        </div>
-    )
+            </div>
+            )
 }
