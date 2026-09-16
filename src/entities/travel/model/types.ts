@@ -11,3 +11,13 @@ export interface Travel {
     updatedAt: string
 }
 
+// visit 타입 정의 -> swagger 그대로
+
+export interface Visit {
+    placeId: number
+    day: number
+    cost: number
+    visitOrder: number
+    startTime: string
+    endTime: string
+}
