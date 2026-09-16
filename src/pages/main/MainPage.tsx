@@ -127,7 +127,9 @@ export default function MainPage() {
 
         {/* 여행지 목록 - 클릭하면 selectedPlace만 바뀜, 담기 버튼 없음 */}
         <div className="w-64 border border-pebble p-4">
-          <h2 className="text-deep-ink font-bold mb-3">여행지 목록</h2>
+          <h2 className="text-deep-ink font-bold mb-3">
+            여행지 목록 <span className="text-cool-ash font-normal">{mockPlaces.length}곳</span>
+          </h2>
 
           {mockPlaces.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
             <PlaceListItem
