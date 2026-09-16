@@ -26,9 +26,9 @@ export default function TimelinePage() {
     const bags = bagItems.map((place) => ({ placeId: place.id })) // API 요청 형태로 변환
 
     // 저장 함수
-    const handleSave = async () => {
+    const handleSave = async(endpoint: string) => {
 
-        if (!accessToken) return // 방어
+        if (!accessToken) return // 방어 코드
 
         const userId = getUserIdFromToken(accessToken)
 
@@ -49,7 +49,7 @@ export default function TimelinePage() {
         }
 
         try {
-            const response = await api.post('/travels', payload)
+            const response = await api.post(endpoint, payload)
             console.log("저장 성공", response.data)
         } catch (error) {
             console.error("저장 실패", error)
@@ -141,9 +141,14 @@ export default function TimelinePage() {
                 <div className="w-72 border border-gray-200 rounded-card p-4 text-gray-400 text-sm text-center">
                     지도 영역 준비 중
                 </div>
+
                 <button
-                    onClick={handleSave}
+                    onClick={() => handleSave('/travels/temp')}
+                    className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">임시저장</button>
+                <button
+                    onClick={() => handleSave('/travels')}
                     className="rounded-btn bg-primary text-black px-6 py-2 text-sm font-semibold">여행 저장하기</button>
+                
             </div>
         </div>
     )
