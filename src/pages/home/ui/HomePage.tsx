@@ -1,4 +1,6 @@
 import { handleCreateTravel } from '../../../shared/lib/tempHandlers'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../../../app/store'
 
 const features = [
   { title: '지도에서 필터링', desc: '원하는 조건으로 여행지를 검색하고 골라보세요.' },
@@ -8,12 +10,20 @@ const features = [
 ]
 
 function HomePage() {
+
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+  const name = useSelector((state: RootState) => state.auth.name)
+
   return (
     <div className="w-full">
       {/* ===== 1. 히어로 섹션 ===== */}
       <section className="w-full bg-pure-white px-10 py-24 flex flex-col items-center text-center gap-6">
         <h1 className="text-[60px] font-bold text-deep-ink leading-tight">
-          예산 안에서, 완벽한 여행.
+          {isLoggedIn ? (
+            <>{name}님, 어디로 떠나볼까요?</>
+            ) : (
+            <>예산 안에서, 완벽한 여행.</>
+            )}
         </h1>
         <p className="text-[18px] text-cool-ash">
           지도에서 여행지를 고르고, 여행가방에 담아 타임라인으로 완성하세요.

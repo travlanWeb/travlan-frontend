@@ -2,62 +2,75 @@ import { useState } from 'react'
 import { api } from '../../shared/api/axiosInstance'
 import { useDispatch } from 'react-redux'
 import { login } from '../../entities/auth/model/authSlice'
+import { useNavigate } from 'react-router-dom'
 
 
 export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [result, setResult] = useState('')
+  const [error, setError] = useState('')  // 성공 시 이동 + 실패 시 에러 메시지 발생 useState
   const dispatch = useDispatch() // 인자 없이 받아옴
+
+
+
+  // 회원가입 유도
+  const navigate = useNavigate()
+  const handleSendToSignup = () => { // 회원가입 페이지로 이동하는 함수 정의
+    navigate('/signup')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
     try {
       const response = await api.post('/auth/login', { email, password }) // swagger 바탕으로 수정해야 함
       dispatch(login(response.data)) // dispatch 함수 위에서 정의 후 response.data 를 login에 넘겨줌, redux devtools 사용하여 결과 편리하게 확인 가ㄴ,ㅇ
-      setResult(JSON.stringify(response.data))
-    }
-
-    catch (error) {
-      if (error && typeof error === 'object' && 'message' in error) {
-        setResult(`에러: ${(error as Error).message}`)
-      }
+      navigate('/') // 로그인 성공하면 홈으로 보내기
+    } catch (error) {
+      setError('이메일 또는 비밀번호를 확인해주세요.')
       console.error(error)
     }
   }
 
   return (
-    <div className="p-8 max-w-sm">
-      <h1 className="text-lg font-bold mb-4">로그인 API 테스트</h1>
+    <div className="min-h-screen flex items-center justify-center bg-pure-white">
+      <div className="w-full max-w-sm border border-pebble p-8">
+        <h1 className="text-2xl font-bold text-deep-ink mb-8 text-center">로그인</h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border p-2"
-        />
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border p-2"
-        />
-        <button type="submit">
-          로그인 요청 보내기
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border border-pebble px-4 py-3 text-deep-ink"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-pebble px-4 py-3 text-deep-ink"
+          />
+          <button type="submit"
+            className="rounded-pill bg-deep-ink text-pure-white py-3 text-sm font-semibold mt-2">
+            로그인
+          </button>
+        </form>
+
+        <button
+          onClick={handleSendToSignup}
+          className="w-full text-center text-sm text-cool-ash mt-4"
+        >
+          계정이 없으신가요? <span className="text-deep-ink font-semibold">회원가입</span>
         </button>
-      </form>
 
-      {/* 응답 결과를 그대로 노출 - 성공/실패 상관없이 백엔드가 뭘 돌려주는지 확인용 */}
-      {result && (
-        <pre>
-          {result}
-        </pre>
-      )}
+        {error && (
+          <p className="text-sm text-red-500 font-semibold mt-2 text-center">{error}</p>
+        )}
+      </div>
     </div>
   )
 }
