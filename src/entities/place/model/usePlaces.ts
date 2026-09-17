@@ -17,7 +17,7 @@ export function usePlaces() {
                     (place: Place) => place.latitude && place.longitude
                 )
 
-                setPlaces(validPlaces.slice(0,10))
+                setPlaces(validPlaces)
             } catch (error) {
                 console.log('장소 목록 조회 실패', error)
             }

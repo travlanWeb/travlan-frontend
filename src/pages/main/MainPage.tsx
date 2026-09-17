@@ -2,7 +2,7 @@
 // 여기서는 "지금 선택된 여행지가 무엇인지"를 이 페이지 안에서만 기억하면 되므로
 // (다른 페이지/컴포넌트가 공유할 필요 없음) Zustand가 아니라 useState로 충분함
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Place } from '../../entities/place/model/types'
 import PlaceListItem from '../../entities/place/ui/PlaceListItem'
@@ -14,6 +14,7 @@ import { useEffect } from 'react'
 import { mockTravel } from '../../entities/travel/model/mockTravel'
 import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
 import { usePlaces } from '../../entities/place/model/usePlaces'
+import { CATEGORY_FILTERS } from '../../entities/place/model/categoryMap'
 
 
 export default function MainPage() {
@@ -43,11 +44,18 @@ export default function MainPage() {
   // 정보 수정 상태 useEffect
   const [isEditingTravelInfo, setIsEditingTravelInfo] = useState(false)
 
+
+
+
+
   // formatDate 함수 선언
   const formatDate = (dateStr: string) => {
     const parts = dateStr.split('-')
     return `${parts[1]}.${parts[2]}`
   }
+
+
+
 
   // getDayCount 함수 선언
   const getDayCount = (start: string, end: string) => {
@@ -63,6 +71,26 @@ export default function MainPage() {
     navigate('/timeline')
   }
 
+
+
+
+  // 필터 기능 추가
+  const [selectedCategory, setSelectedCategory] = useState('전체')
+
+  // const filteredPlaces = selectedCategory === '전체'
+  //   ? places
+  //   : places.filter((place) => place.category === selectedCategory)
+
+  const filteredPlaces = useMemo(() => {
+    return selectedCategory === '전체'
+      ? places
+      : places.filter((place) => place.category === selectedCategory)
+  }, [places, selectedCategory])
+
+
+
+
+
   useEffect(() => {
     if (!isNewTravel) {
       setName(mockTravel.name)
@@ -73,93 +101,131 @@ export default function MainPage() {
     }
   }, [isNewTravel])
 
+
+
+  // 지도 위에 있는 핀만 리스트로 전달하는 기능 (KakaoMap 에서 onBounds~ 로 가져옴)
+  const [mapBounds, setMapBounds] = useState<kakao.maps.LatLngBounds | null>(null)
+
+  // 카테고리 걸러진 것 중에서 지도 범위 안에 있는 장소들만 걸러내기
+  const visiblePlaces = mapBounds
+    ? filteredPlaces.filter((place) => {
+      const position = new kakao.maps.LatLng(place.latitude, place.longitude)
+      return mapBounds.contain(position)
+    })
+    : filteredPlaces
+
+
+
   return (
     <div className="min-h-screen bg-pure-white">
-      <div className="border-b border-pebble px-10 py-6">
-        <div className="flex items-center gap-6">
-          {isEditingTravelInfo ? (
-            <>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="border border-pebble px-2 py-1 text-xl font-bold"
-              />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-pebble px-2 py-1"
-              />
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-pebble px-2 py-1"
-              />
-              <input
-                type="number"
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(Number(e.target.value))}
-                className="border border-pebble px-2 py-1"
-              />
-              <button onClick={() => setIsEditingTravelInfo(false)}>완료</button>
-            </>
-          ) : (
-            <>
-              <h1 className="text-xl text-deep-ink">{name || '여행 이름'}</h1>
-              <span className="text-sm text-cool-ash">
-                {startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)} · ${getDayCount(startDate, endDate)}일` : '기간 미정'}
-              </span>
-              <span className="text-sm text-cool-ash">
-                예산 {totalBudget.toLocaleString()}원
-              </span>
-              <button onClick={() => setIsEditingTravelInfo(true)}>✏️</button>
-            </>
-          )}
-        </div>
-      </div>
+      <div className="max-w-[1200px] mx-auto px-10">
 
-      <div className="flex gap-6 p-8">
-        {/* 지도 영역 - 자리표시자를 실제 KakaoMap으로 교체
-          핀 클릭 시 목록 클릭과 동일하게 selectedPlace를 바꿔줌 */}
-        <div className="w-96 border border-pebble">
-          <KakaoMap places={places} onMarkerClick={setSelectedPlace} />
+        <div className="border-b border-pebble py-6">
+          <div className="flex items-center gap-6">
+
+            {isEditingTravelInfo ? (
+              <>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="border border-pebble px-2 py-1 text-xl font-bold"
+                />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="border border-pebble px-2 py-1"
+                />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="border border-pebble px-2 py-1"
+                />
+                <input
+                  type="number"
+                  value={totalBudget}
+                  onChange={(e) => setTotalBudget(Number(e.target.value))}
+                  className="border border-pebble px-2 py-1"
+                />
+                <button onClick={() => setIsEditingTravelInfo(false)}>완료</button>
+              </>
+            ) : (
+              <>
+                <h1 className="text-xl text-deep-ink">{name || '여행 이름'}</h1>
+                <span className="text-sm text-cool-ash">
+                  {startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)} · ${getDayCount(startDate, endDate)}일` : '기간 미정'}
+                </span>
+                <span className="text-sm text-cool-ash">
+                  예산 {totalBudget.toLocaleString()}원
+                </span>
+                <button onClick={() => setIsEditingTravelInfo(true)}>✏️</button>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* 여행지 목록 - 클릭하면 selectedPlace만 바뀜, 담기 버튼 없음 */}
-        <div className="w-64 border border-pebble p-4 overflow-y-auto max-h-[600px]">
-          <h2 className="text-deep-ink font-bold mb-3">
-            여행지 목록 <span className="text-cool-ash font-normal">{places.length}곳</span>
-          </h2>
 
-          {places.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
-            <PlaceListItem
-              key={place.id}
-              place={place}
-              isSelected={selectedPlace?.id === place.id} // 옵셔널 체이닝 - null 일 떄 에러 방지하기 위해서 있으면 id 그냥 읽고, 없으면 undefined 반환해라
-              onClick={() => setSelectedPlace(place)} // 클릭 발생 시 코드 실행 예약
-            />
+
+        {/* 카테고리 필터 영역 */}
+        <div className="flex gap-2 mt-6 mb-4">
+          {CATEGORY_FILTERS.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-1.5 text-sm rounded-pill border ${selectedCategory === category
+                ? 'bg-deep-ink text-pure-white border-deep-ink'
+                : 'border-pebble text-cool-ash'
+                }`}
+            >
+              {category}
+            </button>
           ))}
-
         </div>
 
-        {/* 여행지 상세 - 담기 버튼이 여기 있음 */}
-        <div className="w-72 border border-pebble p-4">
-          <h2 className="text-deep-ink font-bold mb-3">상세 정보</h2>
-          <PlaceDetail place={selectedPlace} />
-        </div>
 
-        {/* 여행가방 + 타임라인으로 보내기 버튼 */}
-        <div className="w-64 border border-pebble p-4">
-          <BagPanel />
-          <button
-            onClick={handleSendToTimeline}
-            disabled={bagItems.length === 0 || !canProceedToTimeline} // true면 버튼 눌리지 않도록 비활성화 처리함 -> 여행가방에 장소가 없으면 비활성화, 있으면 활성화
-            className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 mt-4"
-          >
-            타임라인으로 보내기
-          </button>
+        <div className="flex gap-6 pb-8 h-[600px]">
+          {/* 1단: 지도 - 폭을 더 넓게 */}
+          <div className="flex-1 border border-pebble h-full">
+            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} />
+          </div>
+
+          {/* 2단: 목록 */}
+          <div className="w-64 border border-pebble p-4 h-full overflow-y-auto">
+            <h2 className="text-deep-ink font-bold mb-3">
+              여행지 목록 <span className="text-cool-ash font-normal">{visiblePlaces.length}곳</span>
+            </h2>
+
+            {visiblePlaces.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
+              <PlaceListItem
+                key={place.id}
+                place={place}
+                isSelected={selectedPlace?.id === place.id} // 옵셔널 체이닝 - null 일 떄 에러 방지하기 위해서 있으면 id 그냥 읽고, 없으면 undefined 반환해라
+                onClick={() => setSelectedPlace(place)} // 클릭 발생 시 코드 실행 예약
+              />
+            ))}
+
+          </div>
+
+          {/* 3단: 상세정보 + 여행가방을 세로로 묶은 하나의 컬럼 */}
+          <div className="w-72 flex flex-col gap-6 h-full">
+            <div className="border border-pebble p-4 flex-1 overflow-y-auto">
+              <h2 className="text-deep-ink font-bold mb-3">상세 정보</h2>
+              <PlaceDetail place={selectedPlace} />
+            </div>
+
+            <div className="border border-pebble p-4">
+              <BagPanel />
+              <button
+                onClick={handleSendToTimeline}
+                disabled={bagItems.length === 0 || !canProceedToTimeline}
+                className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 mt-4"
+              >
+                타임라인으로 보내기
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
