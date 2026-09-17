@@ -15,7 +15,8 @@ const visitSlice = createSlice({
     reducers: {
         // 중복 요청으로 인한 방어 로직 추가함
         addVisit: (state, action) => {
-            const alreadyExists = state.items.some((item) => item.placeId === action.payload.placeId)
+            const alreadyExists = state.items.some(
+                (item) => item.placeId === action.payload.placeId && item.day === action.payload.day)
             if (alreadyExists) return
             state.items.push(action.payload)
         },
@@ -35,10 +36,17 @@ const visitSlice = createSlice({
 
         clearVisits: (state) => {
             state.items = []
-        }
+        },
+
+        removeVisit: (state, action: PayloadAction<{ placeId: number; day: number }>) => {
+            state.items = state.items.filter(
+                (visit) => !(visit.placeId === action.payload.placeId && visit.day === action.payload.day)
+            )
+        },
     },
 })
 
 // 3개 reducer export 처리
-export const { addVisit, updateVisit, clearVisits } = visitSlice.actions
+export const { addVisit, updateVisit, clearVisits, removeVisit } = visitSlice.actions
+
 export default visitSlice.reducer
