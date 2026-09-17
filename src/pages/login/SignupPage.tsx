@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { api } from '../../shared/api/axiosInstance'
 import { useNavigate } from 'react-router-dom'
 
 
