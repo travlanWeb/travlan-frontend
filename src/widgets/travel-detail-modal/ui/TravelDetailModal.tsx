@@ -31,7 +31,7 @@ export default function TravelDetailModal({ travelId, onClose }: TravelDetailMod
 
     return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-card p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-flat p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         <button onClick={onClose} className="float-right">닫기</button>
         {detail && (
           <>

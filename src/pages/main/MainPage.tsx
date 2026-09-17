@@ -210,12 +210,16 @@ export default function MainPage() {
 
           {/* 3단: 상세정보 + 여행가방을 세로로 묶은 하나의 컬럼 */}
           <div className="w-72 flex flex-col gap-6 h-full">
-            <div className="border border-pebble p-4 flex-1 overflow-y-auto">
-              <h2 className="text-deep-ink font-bold mb-3">상세 정보</h2>
-              <PlaceDetail place={selectedPlace} />
-            </div>
+            {selectedPlace && (
+              <div className="border border-pebble p-4 flex-1 overflow-y-auto">
+                <PlaceDetail place={selectedPlace} onClose={() => setSelectedPlace(null)} />
+              </div>
+            )}
 
-            <div className="border border-pebble p-4">
+            <div
+              className={`border border-pebble p-4 overflow-y-auto ${selectedPlace ? 'max-h-[200px]' : 'flex-1'
+                }`}
+            >
               <BagPanel />
               <button
                 onClick={handleSendToTimeline}

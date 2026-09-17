@@ -97,7 +97,7 @@ export default function TimelinePage() {
 
 
             <div className="flex gap-6">
-                <div className="w-64 border border-gray-200 rounded-card p-4 text-gray-400 text-center">
+                <div className="w-64 border border-gray-200 rounded-flat p-4 text-gray-400 text-center">
                     {bagItems.map((place) => {
 
                         const visit = visits.find((v) => v.placeId === place.id)
@@ -146,10 +146,10 @@ export default function TimelinePage() {
                         )
                     })}
                 </div>
-                <div className="flex-1 border border-gray-200 rounded-card p-4 text-gray-400 text-sm text-center">
+                <div className="flex-1 border border-gray-200 rounded-flat p-4 text-gray-400 text-sm text-center">
                     일정 목록 영역 준비 중
                 </div>
-                <div className="w-72 border border-gray-200 rounded-card p-4 text-gray-400 text-sm text-center">
+                <div className="w-72 border border-gray-200 rounded-flat p-4 text-gray-400 text-sm text-center">
                     지도 영역 준비 중
                 </div>
 

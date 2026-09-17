@@ -45,7 +45,7 @@ export default function CommunityPage() {
         {travels.map((travel) => (
           <div
           onClick={() => setSelectedTravelId(travel.id)} 
-          key={travel.id} className="border border-gray-200 rounded-card p-4">
+          key={travel.id} className="border border-gray-200 rounded-flat p-4">
             <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
             <p className="text-sm text-gray-500 mb-1">
               {travel.startDate} ~ {travel.endDate}

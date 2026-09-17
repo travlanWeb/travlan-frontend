@@ -3,10 +3,11 @@ import { useBagStore } from "../../bag/model/useBagStore";
 import { useState } from "react";
 
 interface PlaceDetailProps {
-    place: Place | null // 유니온 타입 -> 선택된 장소, 아무것도 선택 안 됐으면 null 
+    place: Place | null // 유니온 타입 -> 선택된 장소, 아무것도 선택 안 됐으면 null
+    onClose?: () => void // 닫기 버튼 기능 생성
 }
 
-export default function PlaceDetail({ place }: PlaceDetailProps) {
+export default function PlaceDetail({ place, onClose }: PlaceDetailProps) {
 
     // zustand 에서 값 꺼내오기
     const addItem = useBagStore((state) => state.addItem)
@@ -34,14 +35,23 @@ export default function PlaceDetail({ place }: PlaceDetailProps) {
 
     return (
         <div className="h-full flex flex-col gap-3">
-            {/* 이미지 */}
-            {place.imgUrl && (
-                <img
-                    src={place.imgUrl}
-                    alt={place.name}
-                    className="w-full h-40 object-cover rounded-flat"
-                />
-            )}
+            <div className="relative">
+                {/* 이미지 */}
+                {place.imgUrl && (
+                    <img
+                        src={place.imgUrl}
+                        alt={place.name}
+                        className="w-full h-40 object-cover rounded-flat"
+                    />
+                )}
+
+                <button
+                    onClick={onClose}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-pure-white flex items-center justify-center text-deep-ink shadow-sm"
+                >✕</button>
+            </div>
+
+
 
             <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
