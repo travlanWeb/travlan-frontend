@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { api } from '../../shared/api/axiosInstance'
 import { useDispatch } from 'react-redux'
 import { login } from '../../entities/auth/model/authSlice'
@@ -19,6 +19,47 @@ export default function LoginPage() {
   const handleSendToSignup = () => { // 회원가입 페이지로 이동하는 함수 정의
     navigate('/signup')
   }
+
+  // 구글 로그인
+
+  const handleGoogleLogin = async (response: { credential: string }) => {
+    try {
+      const result = await api.post('/auth/google', { idToken: response.credential })
+      dispatch(login(result.data))
+      navigate('/')
+    } catch (error) {
+      setError('구글 로그인에 실패했습니다')
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    // 구글 스크립트가 완전히 로드될 때까지 100ms마다 확인
+    const initializeGoogleLogin = () => {
+      // accounts.id.initialize까지 실제로 함수인지 확인
+      if (
+        !(window as any).google ||
+        !(window as any).google.accounts ||
+        typeof (window as any).google.accounts.id.initialize !== 'function'
+      ) {
+        // 아직 준비 안 됐으면 100ms 후 다시 시도
+        setTimeout(initializeGoogleLogin, 100)
+        return
+      }
+
+      ; (window as any).google.accounts.id.initialize({
+        client_id: '379457475339-khb515cau5vvbno7bkhna803lhv9e22i.apps.googleusercontent.com',
+        callback: handleGoogleLogin,
+      })
+
+        ; (window as any).google.accounts.id.renderButton(
+          document.getElementById('google-login-button'),
+          { type: 'standard' }
+        )
+    }
+
+    initializeGoogleLogin()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +100,8 @@ export default function LoginPage() {
             로그인
           </button>
         </form>
+
+        <div id="google-login-button" className="mt-4"></div>
 
         <button
           onClick={handleSendToSignup}
