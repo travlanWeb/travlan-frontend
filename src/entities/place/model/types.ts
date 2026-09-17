@@ -9,4 +9,7 @@ export interface Place {
     price: number | null
     latitude: number
     longitude: number
+    imgUrl: string
+    tel: string
+    overview: string
 }

@@ -24,7 +24,7 @@ export default function BagPanel() {
               <div>
                 <p className="font-semibold text-deep-ink">{item.name}</p>
                 <p className="text-xs text-cool-ash">
-                  {item.category} · {item.price !== null ? `${item.price.toLocaleString()}원` : '가격 미정'}
+                  {item.category} · {item.price ? `${item.price.toLocaleString()}원` : '가격 미정'}
                 </p>
               </div>
               <button onClick={() => removeItem(item.id)} className="text-cool-ash">

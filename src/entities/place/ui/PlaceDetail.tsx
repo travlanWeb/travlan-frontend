@@ -6,7 +6,7 @@ interface PlaceDetailProps {
 }
 
 export default function PlaceDetail({ place }: PlaceDetailProps) {
-    
+
     // zustand 에서 값 꺼내오기
     const addItem = useBagStore((state) => state.addItem)
     const removeItem = useBagStore((state) => state.removeItem)
@@ -41,7 +41,7 @@ export default function PlaceDetail({ place }: PlaceDetailProps) {
             <p className="text-sm text-gray-700">{place.address}</p>
 
             {/* place.price 가 있을 때만 p태그 표시 */}
-            {place.price !== null && (
+            {place.price && (
                 <p className="text-sm font-semibold">{place.price.toLocaleString()}원</p>
             )}
 

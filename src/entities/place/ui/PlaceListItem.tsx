@@ -30,7 +30,7 @@ export default function PlaceListItem({ place, isSelected, onClick }: PlaceListI
       <p className="font-semibold">{place.name}</p>
       <p className="text-sm text-gray-500">{place.address}</p>
       <p className="text-sm text-cool-ash">
-        {place.price !== null ? `${place.price.toLocaleString()}원` : '가격 미정'}
+        {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
       </p>
     </button>
   )
