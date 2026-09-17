@@ -22,7 +22,6 @@ export default function SignupPage() {
     e.preventDefault()
 
     try {
-      const response = await api.post('/auth/signup', { name, email, password })
       navigate('/login')
     } catch (error) {
       setError('입력하신 정보를 다시 확인해주세요.')
