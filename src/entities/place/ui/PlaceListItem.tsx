@@ -1,6 +1,5 @@
 import type { Place } from "../model/types";
-import { useBagStore } from "../../bag/model/useBagStore"; // 담긴 순서 알기 위해서 import]
-
+import { useBagStore } from "../../bag/model/useBagStore"; // 담긴 순서 알기 위해서 import
 
 interface PlaceListItemProps {
   place: Place
@@ -14,24 +13,43 @@ export default function PlaceListItem({ place, isSelected, onClick }: PlaceListI
   const bagIndex = bagItems.findIndex((item) => item.id === place.id) // 몇 번째에 있는지 index 반환
   const isInBag = bagIndex !== -1 // 가방 안에 있는지 없는지 확인
 
+
+  const addItem = useBagStore((state) => state.addItem)
+  const removeItem = useBagStore((state) => state.removeItem)
+
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
-      className={`w-full text-left border rounded-card p-3 transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200'
+      role="button"
+      className={`w-full text-left border rounded-card p-3 flex flex-col gap-2 transition-colors ${
+        isSelected ? 'border-deep-ink bg-pebble/20' : 'border-pebble'
         }`}
     >
-      <div
-        className={`w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center text-xs ${isInBag ? 'bg-deep-ink text-pure-white border-deep-ink' : 'bg-pure-white'
-          }`}
-      >
-        {isInBag && (bagIndex + 1)}
+      <div className="flex items-center gap-3 min-w-0">
+        {isInBag && (
+          <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+            {bagIndex + 1}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-1 min-w-0">
+          <p className="font-semibold text-deep-ink">{place.name}</p>
+          <p className="text-sm text-cool-ash">{place.address}</p>
+          <p className="text-sm text-cool-ash">
+            {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
+          </p>
+        </div>
       </div>
-      <p className="font-semibold">{place.name}</p>
-      <p className="text-sm text-gray-500">{place.address}</p>
-      <p className="text-sm text-cool-ash">
-        {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
-      </p>
-    </button>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation() // 담기 버튼도 div 안에 있어서 클릭 이벤트가 부모 div 에 전달됨, 이벤트 버블링 발생 방지 코드
+          isInBag ? removeItem(place.id) : addItem(place)
+        }}
+        className={`self-start rounded-pill border border-pebble px-4 py-1 text-xs transition-colors ${isInBag ? 'text-pure-white bg-deep-ink' : 'bg-pure-white'}`}
+      >
+        {isInBag ? '담김' : '담기'}
+      </button>
+    </div>
   )
 }
