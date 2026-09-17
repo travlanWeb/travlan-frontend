@@ -17,5 +17,5 @@
   --leading-body: 29px; /* 18px 기준 1.61 비율 */
 
   --radius-pill: 1000px;
-  --radius-flat: 0px; /* 카드는 각지게, 그림자 없음 */
+   --radius-flat: 8px;
 }
