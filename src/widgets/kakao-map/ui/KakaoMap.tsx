@@ -17,7 +17,7 @@ function KakaoMap({ places, onMarkerClick }: KakaoMapProps) {
   const bagItems = useBagStore((state) => state.items)
 
   const center = places.length > 0
-    ? { lat: places[10].latitude, lng: places[10].longitude }
+    ? { lat: places[0].latitude, lng: places[0].longitude }
     : { lat: 37.5665, lng: 126.9780 }
 
   return (

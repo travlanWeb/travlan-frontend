@@ -5,7 +5,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Place } from '../../entities/place/model/types'
-import { mockPlaces } from '../../entities/place/model/mockPlaces'
 import PlaceListItem from '../../entities/place/ui/PlaceListItem'
 import PlaceDetail from '../../entities/place/ui/PlaceDetail'
 import BagPanel from '../../widgets/bag-panel/BagPanel'
@@ -14,9 +13,12 @@ import KakaoMap from '../../widgets/kakao-map/ui/KakaoMap'
 import { useEffect } from 'react'
 import { mockTravel } from '../../entities/travel/model/mockTravel'
 import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
+import { usePlaces } from '../../entities/place/model/usePlaces'
 
 
 export default function MainPage() {
+
+  const places = usePlaces()
 
   // 생성 + 입력 게이트 추가
   const { travelId } = useParams()
@@ -122,16 +124,16 @@ export default function MainPage() {
         {/* 지도 영역 - 자리표시자를 실제 KakaoMap으로 교체
           핀 클릭 시 목록 클릭과 동일하게 selectedPlace를 바꿔줌 */}
         <div className="w-96 border border-pebble">
-          <KakaoMap places={mockPlaces} onMarkerClick={setSelectedPlace} />
+          <KakaoMap places={places} onMarkerClick={setSelectedPlace} />
         </div>
 
         {/* 여행지 목록 - 클릭하면 selectedPlace만 바뀜, 담기 버튼 없음 */}
-        <div className="w-64 border border-pebble p-4">
+        <div className="w-64 border border-pebble p-4 overflow-y-auto max-h-[600px]">
           <h2 className="text-deep-ink font-bold mb-3">
-            여행지 목록 <span className="text-cool-ash font-normal">{mockPlaces.length}곳</span>
+            여행지 목록 <span className="text-cool-ash font-normal">{places.length}곳</span>
           </h2>
 
-          {mockPlaces.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
+          {places.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
             <PlaceListItem
               key={place.id}
               place={place}
