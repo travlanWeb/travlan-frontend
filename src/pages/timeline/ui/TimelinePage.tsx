@@ -1,7 +1,7 @@
 // 백엔드 연동 전 목업 데이터 넣어둠
 // visits 가져오기 추가(9/16)
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { addVisit, updateVisit, clearVisits } from "../../../entities/travel/model/visitSlice"
 import type { RootState } from "../../../app/store"
