@@ -11,11 +11,14 @@ interface KakaoMapProps {
   // 이전에 만든 PlaceListItem의 onClick 패턴과 동일함 - 이 컴포넌트는 "핀이 클릭됐다"는 사실만 전달하고, 그걸로 뭘 할지는 부모(MainPage)가 결정
   onMarkerClick?: (place: Place) => void
   onBoundsChange?: (bounds: kakao.maps.LatLngBounds) => void // 지도 안에 있는 데이터만 리스트로 빼기 위한 기능
+  // 번호 있는 여행가방 뱃지 대신 항상 기본 핀만 보여줄지 여부
+  // (TravelDetailModal처럼 "현재 로그인한 유저의 여행가방"과 무관한 장소 목록을 보여줄 때 false로 끔)
+  showBagBadges?: boolean
 }
 
 // (9/17 추가) 지도에 나와있는 핀만 리스트에 전달
 
-export default function KakaoMap({ places, onMarkerClick, onBoundsChange }: KakaoMapProps) {
+export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBagBadges = true }: KakaoMapProps) {
   // 지도 초기 중심 좌표 - 장소가 하나 이상 있으면 첫 번째 장소를 기준으로,
   // 없으면 서울 시청 근처를 기본값으로 (임시 fallback)
   const bagItems = useBagStore((state) => state.items)
@@ -54,7 +57,7 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange }: Kaka
     >
 
       {places.map((place) => {
-        const bagIndex = bagItems.findIndex((item) => item.id === place.id)
+        const bagIndex = showBagBadges ? bagItems.findIndex((item) => item.id === place.id) : -1
         const isInBag = bagIndex !== -1
 
         if (isInBag) {
