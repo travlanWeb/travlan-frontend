@@ -70,3 +70,16 @@ export interface TravelDetail {
     visits: TravelVisitItem[]
 }
 
+
+// GET /travels/mine 응답
+export interface MyTravelCard {
+  id: number
+  name: string
+  userId: number
+  originalId: number | null
+  totalBudget: number
+  status: string
+  startDate: string
+  endDate: string
+  updatedAt: string
+}
