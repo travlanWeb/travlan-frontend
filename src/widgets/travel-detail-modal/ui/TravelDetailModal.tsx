@@ -216,23 +216,15 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                     <p className="text-sm text-cool-ash">이 날짜엔 등록된 일정이 없습니다.</p>
                                 )}
 
-                                <div className="flex">
-                                    <div className="flex flex-col items-center mr-4">
-                                        {visitsForSelectedDay.map((visit, index) => (
-                                            <div key={visit.id} className="flex flex-col items-center">
-                                                <div className="w-7 h-7 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-                                                    {index + 1}
-                                                </div>
-                                                {index < visitsForSelectedDay.length - 1 && (
-                                                    <div className="w-px flex-1 bg-pebble my-1" style={{ minHeight: '70px' }} />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="flex-1 flex flex-col gap-4">
-                                        {visitsForSelectedDay.map((visit) => (
-                                            <div key={visit.id} className="border border-pebble rounded-flat p-4">
+                                <div className="flex flex-col gap-4">
+                                    {visitsForSelectedDay.map((visit) => {
+                                        const place = dayRoutePlaces.find((p) => p.id === visit.placeId)
+                                        return (
+                                            <div
+                                                key={visit.id}
+                                                onClick={() => place && handleMoveToPlace(place)}
+                                                className="border border-pebble rounded-flat p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
+                                            >
                                                 <p className="text-sm text-cool-ash mb-1">
                                                     {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
                                                 </p>
@@ -244,8 +236,8 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                                 </div>
                                                 <p className="text-sm text-cool-ash">{visit.address}</p>
                                             </div>
-                                        ))}
-                                    </div>
+                                        )
+                                    })}
                                 </div>
                             </div>
 
@@ -255,7 +247,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                     {selectedDay}일차 경로
                                 </h3>
 
-                                <div className="h-[420px] shrink-0">
+                                <div className="flex-1">
                                     <Map
                                         center={mapCenter}
                                         style={{ width: '100%', height: '100%' }}
@@ -286,27 +278,6 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                             />
                                         )}
                                     </Map>
-                                </div>
-
-                                <div className="p-4 overflow-y-auto flex-1">
-                                    {visitsForSelectedDay.map((visit, index) => {
-                                        const place = dayRoutePlaces.find((p) => p.id === visit.placeId)
-                                        return (
-                                            <div
-                                                key={visit.id}
-                                                onClick={() => place && handleMoveToPlace(place)}
-                                                className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-                                                        {index + 1}
-                                                    </div>
-                                                    <span className="text-sm text-deep-ink">{visit.name}</span>
-                                                </div>
-                                                <span className="text-xs text-cool-ash">{visit.startTime.slice(0, 5)}</span>
-                                            </div>
-                                        )
-                                    })}
                                 </div>
                             </div>
                         </div>
