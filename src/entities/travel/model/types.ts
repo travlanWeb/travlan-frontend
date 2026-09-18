@@ -35,7 +35,7 @@ export interface TravelCard {
 // bags 배열 안의 항목 하나
 export interface TravelBagItem {
     id: number
-    placeId: string
+    placeId: number
     placeName: string
     address: string
     latitude: number

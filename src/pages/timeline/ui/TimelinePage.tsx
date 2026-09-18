@@ -1,7 +1,7 @@
 // 백엔드 연동 전 목업 데이터 넣어둠
 // visits 가져오기 추가(9/16)
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { addVisit, updateVisit, removeVisit } from "../../../entities/travel/model/visitSlice"
 import type { RootState } from "../../../app/store"
@@ -17,6 +17,8 @@ import { useParams } from "react-router-dom"
 
 export default function TimelinePage() {
     // const { travelId } = useParams()
+    const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 최초 위치만
+    const mapRef = useRef<kakao.maps.Map | null>(null)
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
@@ -65,6 +67,7 @@ export default function TimelinePage() {
                 startTime: '',
                 endTime: '',
             }))
+            handleMoveToPlace(place)
         }
     }
 
@@ -72,6 +75,12 @@ export default function TimelinePage() {
     const usedAmount = visits.reduce((sum, v) => sum + (v.cost || 0), 0)
     const remainingAmount = totalBudget - usedAmount
     const usedPercent = totalBudget > 0 ? Math.min(100, (usedAmount / totalBudget) * 100) : 0
+
+    const handleMoveToPlace = (place: typeof bagItems[number]) => {
+        if (!mapRef.current) return
+        const position = new kakao.maps.LatLng(place.latitude, place.longitude)
+        mapRef.current.panTo(position)
+    }
 
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
@@ -101,9 +110,21 @@ export default function TimelinePage() {
         .map((visit) => bagItems.find((item) => item.id === visit.placeId))
         .filter((place): place is typeof bagItems[number] => place !== undefined)
 
-    const mapCenter = timelinePlaces.length > 0
-        ? { lat: timelinePlaces[0].latitude, lng: timelinePlaces[0].longitude }
-        : { lat: 35.8562, lng: 129.2247 }
+    console.log('visitsForSelectedDay placeIds:', visitsForSelectedDay.map(v => v.placeId))
+    console.log('bagItems ids:', bagItems.map(item => item.id))
+    console.log('timelinePlaces:', timelinePlaces.length)
+
+
+    useEffect(() => {
+        if (timelinePlaces.length > 0 && mapRef.current) {
+            const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
+            mapRef.current.panTo(position)
+        }
+    }, [selectedDay])
+
+    // const mapCenter = timelinePlaces.length > 0
+    //     ? { lat: timelinePlaces[0].latitude, lng: timelinePlaces[0].longitude }
+    //     : { lat: 35.8562, lng: 129.2247 }
 
 
     // 예산 바 조건부 색상 변경을 위해 변수 선언
@@ -268,7 +289,16 @@ export default function TimelinePage() {
                     <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
                     <div className="h-64 shrink-0">
-                        <Map center={mapCenter} style={{ width: '100%', height: '100%' }} level={9}>
+                        <Map center={mapCenter}
+                            style={{ width: '100%', height: '100%' }}
+                            level={9}
+                            onCreate={(map) => {
+                                mapRef.current = map
+                                if (timelinePlaces.length > 0) {
+                                    const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
+                                    map.panTo(position)
+                                }
+                            }}>
                             {timelinePlaces.map((place, index) => (
                                 <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
                                     <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
@@ -294,7 +324,11 @@ export default function TimelinePage() {
                             const place = bagItems.find((item) => item.id === visit.placeId)
                             if (!place) return null
                             return (
-                                <div key={visit.placeId} className="flex items-center justify-between py-2 border-b border-pebble">
+                                <div
+                                    key={visit.placeId}
+                                    onClick={() => handleMoveToPlace(place)}
+                                    className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
+                                >
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
                                             {index + 1}

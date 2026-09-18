@@ -1,69 +1,63 @@
 // 여행 상세 보여주는 모달 (타임라인 + 지도)
 
-import { useState, useEffect } from 'react'
+// 여행 상세 보여주는 모달 (타임라인 + 지도) - 읽기 전용, 타임라인 페이지 스타일 재사용
+
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../../../shared/api/axiosInstance'
 import type { TravelDetail, UserProfile } from '../../../entities/travel/model/types'
 import type { Place } from '../../../entities/place/model/types'
-import KakaoMap from '../../kakao-map/ui/KakaoMap'
+import { Map, CustomOverlayMap, Polyline } from 'react-kakao-maps-sdk'
 
-// 복사 기능 구현하며 import 
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useTravelDraftStore } from '../../../entities/travel/model/useTravelDraftStore'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { addVisit, clearVisits } from '../../../entities/travel/model/visitSlice'
 
-
-
-
 interface TravelDetailModalProps {
-    travelId: number | null // null 이면 모달 닫혀있는 상태
-    onClose: () => void // 닫기 버튼 눌렀을 때 부모에게 알림
+    travelId: number | null
+    onClose: () => void
     onNavigateToOriginal?: (originalTravelId: number) => void
 }
-
-
 
 export default function TravelDetailModal({ travelId, onClose, onNavigateToOriginal }: TravelDetailModalProps) {
     const [detail, setDetail] = useState<TravelDetail | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [author, setAuthor] = useState<UserProfile | null>(null) // 작성자 정보만 새로 추가
-    const [originalAuthor, setOriginalAuthor] = useState<UserProfile | null>(null) // 원작자 표시
+    const [author, setAuthor] = useState<UserProfile | null>(null)
+    const [originalAuthor, setOriginalAuthor] = useState<UserProfile | null>(null)
+    const [selectedDay, setSelectedDay] = useState(1)
+    const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 지도 최초 위치만 담당 (이후 이동은 panTo가 처리)
+    const mapRef = useRef<kakao.maps.Map | null>(null) // 지도 인스턴스를 저장해서 panTo를 호출하기 위함
 
-    // 복사 기능 구현 함수 선언
-    // 함수 꺼내오기
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const setName = useTravelDraftStore((state) => state.setName)
     const setStartDate = useTravelDraftStore((state) => state.setStartDate)
     const setEndDate = useTravelDraftStore((state) => state.setEndDate)
     const setTotalBudget = useTravelDraftStore((state) => state.setTotalBudget)
-    const clearBag = useBagStore((state) => state.clearBag) // 없다면 아래에서 추가 필요
-    const addBagItem = useBagStore((state) => state.addItem)
     const setOriginalId = useTravelDraftStore((state) => state.setOriginalId)
-
-
+    const clearBag = useBagStore((state) => state.clearBag)
+    const addBagItem = useBagStore((state) => state.addItem)
 
     useEffect(() => {
         if (travelId === null) return
 
         setDetail(null)
-        setAuthor(null) // 작성자 정보도 같이 초기화
+        setAuthor(null)
+        setOriginalAuthor(null)
         setError(null)
         setIsLoading(true)
-        setOriginalAuthor(null)
+        setSelectedDay(1)
 
         const fetchDetail = async () => {
             try {
                 const response = await api.get(`/travels/${travelId}`)
                 setDetail(response.data)
-                console.log('originalId:', response.data.originalId)
 
                 const authorResponse = await api.get(`/users/${response.data.userId}`)
                 setAuthor(authorResponse.data)
 
-                // 원작자 조회 - originalId가 있을 때만
                 if (response.data.originalId) {
                     const originalTravelResponse = await api.get(`/travels/${response.data.originalId}`)
                     const originalAuthorResponse = await api.get(`/users/${originalTravelResponse.data.userId}`)
@@ -79,17 +73,23 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         fetchDetail()
     }, [travelId])
 
-    // day -> visitOrder 순으로 정렬해서 타임라인 순서 그대로 보여주기
-    const sortedVisits = detail
-        ? [...detail.visits].sort((a, b) => a.day - b.day || a.visitOrder - b.visitOrder)
+    // 여행에 등장하는 Day 목록 (1, 2, 3 ...)
+    const dayNumbers = detail
+        ? Array.from(new Set(detail.visits.map((v) => v.day))).sort((a, b) => a - b)
         : []
 
+    // 선택된 Day의 일정만, visitOrder 순으로
+    const visitsForSelectedDay = detail
+        ? detail.visits
+            .filter((v) => v.day === selectedDay)
+            .slice()
+            .sort((a, b) => a.visitOrder - b.visitOrder)
+        : []
 
-
-    // KakaoMap은 Place[]를 받는 위젯이라 bags(TravelBagItem[])를 Place 형태로 변환
+    // KakaoMap(전체 bags 표시용)과 지도 경로(선택된 Day용)에 쓸 Place 배열
     const bagPlaces: Place[] = detail
         ? detail.bags.map((bag) => ({
-            id: bag.id,
+            id: bag.placeId,
             apiId: '',
             name: bag.placeName,
             category: '',
@@ -103,11 +103,28 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         }))
         : []
 
-    // 복사 기능 - 핸들러
+    // 선택된 Day 경로에 쓸 좌표들 (visitOrder 순서)
+    const dayRoutePlaces = visitsForSelectedDay
+        .map((visit) => bagPlaces.find((p) => p.id === visit.placeId))
+        .filter((p): p is Place => p !== undefined)
+
+    // Day가 바뀌면 그 날의 첫 장소로 부드럽게 이동
+    useEffect(() => {
+        if (dayRoutePlaces.length > 0 && mapRef.current) {
+            const position = new kakao.maps.LatLng(dayRoutePlaces[0].latitude, dayRoutePlaces[0].longitude)
+            mapRef.current.panTo(position)
+        }
+    }, [selectedDay, detail])
+
+    // 경로 목록 클릭 시 그 장소로 부드럽게 이동
+    const handleMoveToPlace = (place: Place) => {
+        if (!mapRef.current) return
+        const position = new kakao.maps.LatLng(place.latitude, place.longitude)
+        mapRef.current.panTo(position)
+    }
 
     const handleCopyToMyTravel = () => {
         if (!detail) return
-        console.log('복사할 원본 detail.id:', detail.id) // 추가
 
         clearBag()
         dispatch(clearVisits())
@@ -117,7 +134,6 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         setEndDate(detail.endDate)
         setTotalBudget(detail.totalBudget)
         setOriginalId(detail.id)
-        console.log('setOriginalId 호출 직후 store 값:', useTravelDraftStore.getState().originalId) // 추가
 
         bagPlaces.forEach((place) => addBagItem(place))
 
@@ -138,81 +154,173 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
 
     if (travelId === null) return null
 
-
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-flat p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                <button onClick={onClose} className="float-right">닫기</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-flat w-full h-full max-w-[1600px] flex flex-col overflow-hidden">
+                {/* 상단 바 */}
+                <div className="border-b border-pebble px-8 py-5 flex items-center justify-between shrink-0">
+                    <div>
+                        {detail && (
+                            <>
+                                <h2 className="text-xl font-bold text-deep-ink">{detail.name}</h2>
+                                <div className="flex items-center gap-3 mt-1">
+                                    {author && (
+                                        <p className="text-sm text-cool-ash">작성자: {author.name}</p>
+                                    )}
+                                    {originalAuthor && detail.originalId && (
+                                        <button
+                                            onClick={() => onNavigateToOriginal?.(detail.originalId!)}
+                                            className="text-sm text-deep-ink underline"
+                                        >
+                                            원작: {originalAuthor.name}님의 여행 보러가기
+                                        </button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-9 h-9 rounded-full border border-pebble flex items-center justify-center text-deep-ink shrink-0"
+                    >
+                        ✕
+                    </button>
+                </div>
 
-                {isLoading && <p>불러오는 중...</p>}
-                {error && <p className="text-red-500">{error}</p>}
+                {isLoading && <p className="p-8 text-cool-ash">불러오는 중...</p>}
+                {error && <p className="p-8 text-red-500">{error}</p>}
 
                 {detail && (
                     <>
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h2 className="text-xl font-bold">{detail.name}</h2>
-                                {author && (
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        작성자: {author.name}
-                                    </p>
+                        {/* Day 탭 */}
+                        <div className="px-8 pt-4 flex gap-2 shrink-0">
+                            {dayNumbers.map((day) => (
+                                <button
+                                    key={day}
+                                    onClick={() => setSelectedDay(day)}
+                                    className={`px-5 py-2 text-sm font-semibold rounded-pill border ${selectedDay === day
+                                        ? 'bg-deep-ink text-pure-white border-deep-ink'
+                                        : 'border-pebble text-cool-ash'
+                                        }`}
+                                >
+                                    Day {day}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* 본문: 타임라인 + 지도 */}
+                        <div className="flex-1 flex gap-6 px-8 py-6 overflow-hidden">
+                            {/* 타임라인 카드 목록 */}
+                            <div className="flex-1 overflow-y-auto">
+                                {visitsForSelectedDay.length === 0 && (
+                                    <p className="text-sm text-cool-ash">이 날짜엔 등록된 일정이 없습니다.</p>
                                 )}
-                                {originalAuthor && detail.originalId && (
-                                    <button
-                                        onClick={() => onNavigateToOriginal?.(detail.originalId!)}
-                                        className="text-sm text-blue-500 underline mt-1"
-                                    >
-                                        원작: {originalAuthor.name}님의 여행 보러가기
-                                    </button>
-                                )}
+
+                                <div className="flex">
+                                    <div className="flex flex-col items-center mr-4">
+                                        {visitsForSelectedDay.map((visit, index) => (
+                                            <div key={visit.id} className="flex flex-col items-center">
+                                                <div className="w-7 h-7 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+                                                    {index + 1}
+                                                </div>
+                                                {index < visitsForSelectedDay.length - 1 && (
+                                                    <div className="w-px flex-1 bg-pebble my-1" style={{ minHeight: '70px' }} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col gap-4">
+                                        {visitsForSelectedDay.map((visit) => (
+                                            <div key={visit.id} className="border border-pebble rounded-flat p-4">
+                                                <p className="text-sm text-cool-ash mb-1">
+                                                    {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
+                                                </p>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <h3 className="font-bold text-deep-ink">{visit.name}</h3>
+                                                    <span className="text-xs text-cool-ash">
+                                                        {visit.cost > 0 ? `${visit.cost.toLocaleString()}원` : '가격 미정'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-cool-ash">{visit.address}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* 지도 + 경로 요약 */}
+                            <div className="flex-1 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
+                                <h3 className="text-deep-ink font-bold p-4 pb-2 shrink-0">
+                                    {selectedDay}일차 경로
+                                </h3>
+
+                                <div className="h-[420px] shrink-0">
+                                    <Map
+                                        center={mapCenter}
+                                        style={{ width: '100%', height: '100%' }}
+                                        level={3}
+                                        onCreate={(map) => {
+                                            mapRef.current = map
+                                            if (dayRoutePlaces.length > 0) {
+                                                const position = new kakao.maps.LatLng(dayRoutePlaces[0].latitude, dayRoutePlaces[0].longitude)
+                                                map.panTo(position)
+                                            }
+                                        }}
+                                    >
+                                        {dayRoutePlaces.map((place, index) => (
+                                            <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
+                                                <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
+                                                    {index + 1}
+                                                </div>
+                                            </CustomOverlayMap>
+                                        ))}
+
+                                        {dayRoutePlaces.length > 1 && (
+                                            <Polyline
+                                                path={dayRoutePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
+                                                strokeWeight={3}
+                                                strokeColor="#000d10"
+                                                strokeOpacity={0.7}
+                                                strokeStyle="shortdash"
+                                            />
+                                        )}
+                                    </Map>
+                                </div>
+
+                                <div className="p-4 overflow-y-auto flex-1">
+                                    {visitsForSelectedDay.map((visit, index) => {
+                                        const place = dayRoutePlaces.find((p) => p.id === visit.placeId)
+                                        return (
+                                            <div
+                                                key={visit.id}
+                                                onClick={() => place && handleMoveToPlace(place)}
+                                                className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+                                                        {index + 1}
+                                                    </div>
+                                                    <span className="text-sm text-deep-ink">{visit.name}</span>
+                                                </div>
+                                                <span className="text-xs text-cool-ash">{visit.startTime.slice(0, 5)}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 하단 복사 버튼 */}
+                        <div className="border-t border-pebble px-8 py-5 shrink-0">
                             <button
                                 type="button"
                                 onClick={handleCopyToMyTravel}
-                                className="text-sm text-deep-ink underline"
+                                className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
                             >
                                 내 여행으로 복사하기
                             </button>
                         </div>
-
-                        {bagPlaces.length > 0 && (
-                            <section className="mb-6">
-                                <div className="h-64 w-full">
-                                    {/* 읽기 전용: onMarkerClick을 안 넘겨서 핀 클릭해도 아무 동작 안 함, showBagBadges=false로 내 여행가방과 무관하게 기본 핀만 표시 */}
-                                    <KakaoMap places={bagPlaces} showBagBadges={false} />
-                                </div>
-                            </section>
-                        )}
-
-                        <section className="mb-6">
-                            <h3 className="font-semibold mb-2">담긴 장소</h3>
-                            {detail.bags.length === 0 ? (
-                                <p className="text-sm text-gray-500">담긴 장소가 없습니다.</p>
-                            ) : (
-                                <ul className="list-disc list-inside">
-                                    {detail.bags.map((bag) => (
-                                        <li key={bag.id}>{bag.placeName}</li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
-
-                        <section>
-                            <h3 className="font-semibold mb-2">타임라인</h3>
-                            {sortedVisits.length === 0 ? (
-                                <p className="text-sm text-gray-500">등록된 일정이 없습니다.</p>
-                            ) : (
-                                <ul className="space-y-2">
-                                    {sortedVisits.map((visit) => (
-                                        <li key={visit.id} className="text-sm">
-                                            <span className="text-gray-500">Day {visit.day}</span>{' '}
-                                            {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)} · {visit.name} · {visit.cost.toLocaleString()}원
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
                     </>
                 )}
             </div>

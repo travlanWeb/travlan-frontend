@@ -1,75 +1,66 @@
-import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk'
+import { Map, CustomOverlayMap } from 'react-kakao-maps-sdk' // MapMarker 제거
 import type { Place } from '../../../entities/place/model/types'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
-import { useMemo, useCallback, useRef } from 'react'
+import { useMemo, useCallback, useRef, useEffect } from 'react'
+import { Landmark, Bed, ShoppingBag, UtensilsCrossed, Coffee, MapPin } from 'lucide-react'
+import { CATEGORY_COLORS, DEFAULT_MARKER_COLOR } from '../../../entities/place/model/categoryMap'
 
-// customOverlayMap: 기본 핀 모양이 아닌 커스텀 html 그대로 얹을 수 있게 한 컴포넌트
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  '관광': Landmark,
+  '숙박': Bed,
+  '쇼핑': ShoppingBag,
+  '음식점': UtensilsCrossed,
+  '카페': Coffee,
+}
 
 interface KakaoMapProps {
   places: Place[]
-  // 핀 클릭 시 실행할 함수 - 어떤 장소가 클릭됐는지 부모에게 알려줌
-  // 이전에 만든 PlaceListItem의 onClick 패턴과 동일함 - 이 컴포넌트는 "핀이 클릭됐다"는 사실만 전달하고, 그걸로 뭘 할지는 부모(MainPage)가 결정
   onMarkerClick?: (place: Place) => void
-  onBoundsChange?: (bounds: kakao.maps.LatLngBounds) => void // 지도 안에 있는 데이터만 리스트로 빼기 위한 기능
-  // 번호 있는 여행가방 뱃지 대신 항상 기본 핀만 보여줄지 여부
-  // (TravelDetailModal처럼 "현재 로그인한 유저의 여행가방"과 무관한 장소 목록을 보여줄 때 false로 끔)
+  onBoundsChange?: (bounds: kakao.maps.LatLngBounds) => void
   showBagBadges?: boolean
+  moveToPlace?: Place | null
+  selectedPlaceId?: number | null // id 마커 강조 (어느 마커 보고 있는지 (상세 정보 사용 시))
 }
 
-// (9/17 추가) 지도에 나와있는 핀만 리스트에 전달
-
-export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBagBadges = true }: KakaoMapProps) {
-  // 지도 초기 중심 좌표 - 장소가 하나 이상 있으면 첫 번째 장소를 기준으로,
-  // 없으면 서울 시청 근처를 기본값으로 (임시 fallback)
+export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBagBadges = true, moveToPlace, selectedPlaceId }: KakaoMapProps) {
   const bagItems = useBagStore((state) => state.items)
+  const mapRef = useRef<kakao.maps.Map | null>(null)
 
-  // 초기 중심 설정했는지 확인하는 useRef
-  const hasSetInitialCenter = useRef(false)
+  const center = useMemo(() => ({ lat: 35.8353, lng: 129.2107 }), [])
 
-  const center = useMemo(() => { // useMemo: places[0]?.id 가 바뀌지 않는 한 객체를 새로 만들지 않고 재사용한다
-    //  한 번 계산 후에는 다시 계산하는 거 없음
-    if (hasSetInitialCenter.current) {
-      return { lat: 37.5665, lng: 126.9780 }
-    }
-
-    if (places.length > 0) {
-      hasSetInitialCenter.current = true // "이제 계산 끝났다" 표시
-      return { lat: places[0].latitude, lng: places[0].longitude }
-    }
-
-    return { lat: 37.5665, lng: 126.9780 }
-  }, [places.length > 0]) // "장소가 생겼는지 없는지"만 감지 (0 -> 양수로 바뀌는 순간)
-
-
-
-  // (fix: Error) onBoundsChange가 바뀌지 않는 한 항상 같은 함수를 재사용
   const handleBoundsChange = useCallback((map: kakao.maps.Map) => {
     onBoundsChange?.(map.getBounds())
   }, [onBoundsChange])
+
+  useEffect(() => {
+    if (!moveToPlace || !mapRef.current) return
+    const position = new kakao.maps.LatLng(moveToPlace.latitude, moveToPlace.longitude)
+    mapRef.current.panTo(position)
+  }, [moveToPlace])
 
   return (
     <Map
       center={center}
       style={{ width: '100%', height: '100%' }}
-      level={8} // 확대/축소 정도 - 숫자가 클수록 더 넓은 범위가 보임
-      onCreate={handleBoundsChange} // 지도 처음 만들어질 때
-      onBoundsChanged={handleBoundsChange} // 이동이나 확대축소 끝났을 때
+      level={8}
+      onCreate={(map) => { mapRef.current = map }}
+      onBoundsChanged={handleBoundsChange}
     >
-
       {places.map((place) => {
         const bagIndex = showBagBadges ? bagItems.findIndex((item) => item.id === place.id) : -1
         const isInBag = bagIndex !== -1
+        const isSelected = place.id === selectedPlaceId // 추가
 
         if (isInBag) {
-          // 담겨있는 장소
           return (
-            <CustomOverlayMap
-              key={place.id}
-              position={{ lat: place.latitude, lng: place.longitude }}
-            >
+            <CustomOverlayMap key={place.id} 
+            position={{ lat: place.latitude, lng: place.longitude }}
+            zIndex={isSelected ? 100 : 10}>
               <div
                 onClick={() => onMarkerClick?.(place)}
-                className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center cursor-pointer"
+                className={`rounded-full bg-deep-ink text-white text-xs flex items-center justify-center cursor-pointer transition-all ${
+                  isSelected ? 'w-8 h-8 ring-4 ring-clay-ember' : 'w-6 h-6'
+                }`}
               >
                 {bagIndex + 1}
               </div>
@@ -77,13 +68,23 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBa
           )
         }
 
-        // 안 담겨있는 장소 -> 기본 마커로 표시하기
+        const markerColor = CATEGORY_COLORS[place.category] ?? DEFAULT_MARKER_COLOR
+        const IconComponent = CATEGORY_ICONS[place.category] ?? MapPin
+
         return (
-          <MapMarker
-            key={place.id}
-            position={{ lat: place.latitude, lng: place.longitude }}
-            onClick={() => onMarkerClick?.(place)}
-          />
+          <CustomOverlayMap key={place.id} 
+          position={{ lat: place.latitude, lng: place.longitude }}
+          zIndex={isSelected ? 100 : 1} >
+            <div
+              onClick={() => onMarkerClick?.(place)}
+              className={`rounded-full flex items-center justify-center cursor-pointer shadow-sm border-2 border-pure-white transition-all ${
+                isSelected ? 'w-11 h-11 ring-4 ring-clay-black' : 'w-8 h-8'
+              }`}
+              style={{ backgroundColor: markerColor }}
+            >
+              <IconComponent size={isSelected ? 20 : 16} color="white" />
+            </div>
+          </CustomOverlayMap>
         )
       })}
     </Map>

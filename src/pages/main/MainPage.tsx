@@ -193,7 +193,7 @@ export default function MainPage() {
         <div className="flex gap-6 pb-8 h-[600px]">
           {/* 1단: 지도 - 폭을 더 넓게 */}
           <div className="flex-1 border border-pebble h-full">
-            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} />
+            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} moveToPlace={selectedPlace} selectedPlaceId={selectedPlace?.id ?? null}/>
           </div>
 
           {/* 2단: 목록 */}
