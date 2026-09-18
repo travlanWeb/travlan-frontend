@@ -167,7 +167,7 @@ export default function MainPage() {
                 </>
               )}
             </div>
-            <TravelNavTabs disableTimeline={!canProceedToTimeline}/>
+            <TravelNavTabs disableTimeline={!canProceedToTimeline} />
           </div>
         </div>
 
@@ -193,7 +193,7 @@ export default function MainPage() {
         <div className="flex gap-6 pb-8 h-[600px]">
           {/* 1단: 지도 - 폭을 더 넓게 */}
           <div className="flex-1 border border-pebble h-full">
-            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} moveToPlace={selectedPlace} selectedPlaceId={selectedPlace?.id ?? null}/>
+            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} moveToPlace={selectedPlace} selectedPlaceId={selectedPlace?.id ?? null} />
           </div>
 
           {/* 2단: 목록 */}
@@ -222,19 +222,21 @@ export default function MainPage() {
               </div>
             )}
 
+            {/* 여행가방 - 스크롤 되는 부분만 분리 */}
             <div
-              className={`border border-pebble p-4 overflow-y-auto ${selectedPlace ? 'max-h-[200px]' : 'flex-1'
-                }`}
+              className={`border border-pebble p-4 overflow-y-auto ${selectedPlace ? 'max-h-[200px]' : 'flex-1'}`}
             >
               <BagPanel />
-              <button
-                onClick={handleSendToTimeline}
-                disabled={bagItems.length === 0 || !canProceedToTimeline}
-                className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 mt-4"
-              >
-                타임라인으로 보내기
-              </button>
             </div>
+
+            {/* 버튼은 스크롤 밖, 항상 보이는 자리로 */}
+            <button
+              onClick={handleSendToTimeline}
+              disabled={bagItems.length === 0 || !canProceedToTimeline}
+              className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 shrink-0"
+            >
+              타임라인으로 보내기
+            </button>
           </div>
         </div>
       </div>
