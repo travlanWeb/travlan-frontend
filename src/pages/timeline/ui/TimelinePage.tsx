@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom"
 import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
 import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
+import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeOptions"
+import { CATEGORY_DURATION_MINUTES } from "../../../entities/place/model/categoryMap"
 
 export default function TimelinePage() {
     // const { travelId } = useParams()
@@ -77,6 +79,7 @@ export default function TimelinePage() {
     const usedAmount = visits.reduce((sum, v) => sum + (v.cost || 0), 0)
     const remainingAmount = totalBudget - usedAmount
     const usedPercent = totalBudget > 0 ? Math.min(100, (usedAmount / totalBudget) * 100) : 0
+    const timeOptions = generateTimeOptions()
 
     const handleMoveToPlace = (place: typeof bagItems[number]) => {
         if (!mapRef.current) return
@@ -173,10 +176,10 @@ export default function TimelinePage() {
                                 <button
                                     onClick={() => toggleAddToSchedule(place.id)}
                                     className={`w-full rounded-pill py-1.5 text-xs font-semibold transition-colors cursor-pointer ${added
-                                            ? 'bg-deep-ink text-pure-white'
-                                            : addedElsewhere
-                                                ? 'border border-pebble text-cool-ash bg-pebble/45' // 다른 날 담김 - 회색
-                                                : 'border border-pebble text-deep-ink' // 기본
+                                        ? 'bg-deep-ink text-pure-white'
+                                        : addedElsewhere
+                                            ? 'border border-pebble text-cool-ash bg-pebble/45' // 다른 날 담김 - 회색
+                                            : 'border border-pebble text-deep-ink' // 기본
                                         }`}
                                 >
                                     {added ? '일정에서 빼기' : '+ 일정에 추가'}
@@ -231,19 +234,37 @@ export default function TimelinePage() {
                                 return (
                                     <div key={visit.placeId} className="border border-pebble rounded-flat p-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <input
-                                                type="time"
+                                            <select
                                                 value={visit.startTime}
-                                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: e.target.value }))}
+                                                onChange={(e) => {
+                                                    const newStartTime = e.target.value
+                                                    dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: newStartTime }))
+
+                                                    // 카테고리 기본 소요시간이 있으면 종료 시간 자동 계산
+                                                    const duration = CATEGORY_DURATION_MINUTES[place.category]
+                                                    if (duration !== null && duration !== undefined) {
+                                                        const newEndTime = addMinutesToTime(newStartTime, duration)
+                                                        dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
+                                                    }
+                                                }}
                                                 className="border border-pebble px-2 py-1 text-sm text-cool-ash"
-                                            />
+                                            >
+                                                <option value="">시작 시간</option>
+                                                {timeOptions.map((time) => (
+                                                    <option key={time} value={time}>{time}</option>
+                                                ))}
+                                            </select>
                                             <span className="text-sm text-cool-ash">~</span>
-                                            <input
-                                                type="time"
+                                            <select
                                                 value={visit.endTime}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
                                                 className="border border-pebble px-2 py-1 text-sm text-cool-ash"
-                                            />
+                                            >
+                                                <option value="">종료 시간</option>
+                                                {timeOptions.map((time) => (
+                                                    <option key={time} value={time}>{time}</option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <div className="flex items-center justify-between mb-1">
