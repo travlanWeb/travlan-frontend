@@ -21,25 +21,65 @@ function HomePage() {
         <h1 className="text-[60px] font-bold text-deep-ink leading-tight">
           {isLoggedIn ? (
             <>{name}님, 어디로 떠나볼까요?</>
-            ) : (
+          ) : (
             <>예산 안에서, 완벽한 여행.</>
-            )}
+          )}
         </h1>
         <p className="text-[18px] text-cool-ash">
           지도에서 여행지를 고르고, 여행가방에 담아 타임라인으로 완성하세요.
         </p>
 
-        <svg width="400" height="120" viewBox="0 0 400 120" className="my-2">
+        <svg width="700" height="200" viewBox="0 0 700 200" className="my-2 max-w-full h-auto">
+          {/* 도로 몸체 - 더 굵게 */}
           <path
-            d="M20 100 Q 100 20, 200 60 T 380 30"
-            stroke="#bc7155"
-            strokeWidth="2"
+            d="M35 175 Q 175 35, 350 105 T 665 55"
+            stroke="#d5d3d4"
+            strokeWidth="32"
             fill="none"
-            strokeDasharray="6 6"
+            strokeLinecap="round"
           />
-          <circle cx="20" cy="100" r="5" fill="#000d10" />
-          <circle cx="200" cy="60" r="5" fill="#000d10" />
-          <circle cx="380" cy="30" r="5" fill="#bc7155" />
+
+          {/* 중앙 차선 - 흰 점선 */}
+          <path
+            d="M35 175 Q 175 35, 350 105 T 665 55"
+            stroke="#ffffff"
+            strokeWidth="4"
+            fill="none"
+            strokeDasharray="16 16"
+          />
+
+          {/* 자동차 실루엣 */}
+          {/* 자동차 실루엣 - clay-ember 색상 */}
+          <g>
+            {/* 그림자 */}
+            <ellipse cx="0" cy="10" rx="26" ry="3" fill="#000d10" opacity="0.15" />
+
+            {/* 차체 - 주황색 */}
+            <path
+              d="M-24 -10 L-17 -10 L-12 -18 L12 -18 L17 -10 L24 -10 L24 4 L-24 4 Z"
+              fill="#bc7155"
+            />
+
+            {/* 창문 - 살짝 어두운 톤으로 구분 */}
+            <path
+              d="M-14 -10 L-10 -16 L10 -16 L14 -10 Z"
+              fill="#000d10"
+              opacity="0.25"
+            />
+
+            {/* 바퀴 - 검정 + 안쪽 살짝 밝은 원 */}
+            <circle cx="-12" cy="7" r="5.5" fill="#000d10" />
+            <circle cx="-12" cy="7" r="2" fill="#8e8e95" />
+            <circle cx="12" cy="7" r="5.5" fill="#000d10" />
+            <circle cx="12" cy="7" r="2" fill="#8e8e95" />
+
+            <animateMotion
+              dur="6.9s"
+              repeatCount="indefinite"
+              path="M35 175 Q 175 35, 350 105 T 665 55"
+              rotate="auto"
+            />
+          </g>
         </svg>
 
         <button
