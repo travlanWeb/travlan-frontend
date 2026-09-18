@@ -16,7 +16,7 @@ import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 import { useParams } from "react-router-dom"
 
 export default function TimelinePage() {
-    const { travelId } = useParams()
+    // const { travelId } = useParams()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
