@@ -6,33 +6,43 @@ import { useState, useEffect } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
 import { api } from "../../../shared/api/axiosInstance"
 import TravelDetailModal from "../../../widgets/travel-detail-modal/ui/TravelDetailModal"
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../../../app/store'
 
 
 export default function CommunityPage() {
 
-  const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null) // modal
+  // 비로그인 시 보여줄 더미 카드 (실제 데이터 아님, 블러 미리보기 전용)
+  const MOCK_PREVIEW_CARDS = [
+    { id: -1, name: '제주 힐링 여행', startDate: '2026-10-01', endDate: '2026-10-03', totalBudget: 350000 },
+    { id: -2, name: '부산 바다 여행', startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000 },
+    { id: -3, name: '경주 역사 탐방', startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000 },
+  ]
 
+  const navigate = useNavigate()
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+  const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null) // modal
   const [travels, setTravels] = useState<TravelCard[]>([]) // 받아온 데이터 담기
+  const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
+
 
   useEffect(() => {
-    // 컴포넌트 화면에 나타나면 api 호출, 데이터 가져옴
+    if (!isLoggedIn) return // 로그인 안 됐으면 애초에 API 호출 안 함 (401 방지)
+
     const fetchTravels = async () => {
       try {
-        const response = await api.get('/travels') // 응답 받아오기
-
-        // 기본 - 최신순으로 정렬해서 보여줌
+        const response = await api.get('/travels')
         const sortedTravels = [...response.data].sort((a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         )
-
         setTravels(sortedTravels)
       } catch (error) {
         console.error('여행지 목록 조회 실패', error)
       }
     }
     fetchTravels()
-  }, []) // 페이지 열릴 때 한 번만 실행
-
+  }, [isLoggedIn])
 
   return (
     <div className="max-w-[1200px] mx-auto px-10 py-16">
@@ -41,26 +51,38 @@ export default function CommunityPage() {
         <p className="text-gray-500">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {travels.map((travel) => (
-          <div
-            onClick={() => setSelectedTravelId(travel.id)}
-            key={travel.id} className="border border-gray-200 rounded-flat p-4">
-            <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
-            <p className="text-sm text-gray-500 mb-1">
-              {travel.startDate} ~ {travel.endDate}
-            </p>
-            <p className="text-sm font-medium">
-              예산 {travel.totalBudget.toLocaleString()}원
-            </p>
+      <div className="relative">
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${!isLoggedIn ? 'blur-sm pointer-events-none select-none' : ''}`}>
+          {displayedTravels.map((travel) => (
+            <div
+              onClick={() => isLoggedIn && setSelectedTravelId(travel.id)}
+              key={travel.id}
+              className="border border-gray-200 rounded-flat p-4"
+            >
+              <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
+              <p className="text-sm text-gray-500 mb-1">
+                {travel.startDate} ~ {travel.endDate}
+              </p>
+              <p className="text-sm font-medium">
+                예산 {travel.totalBudget.toLocaleString()}원
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {!isLoggedIn && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button onClick={() => navigate('/login')} className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold shadow-lg">
+              로그인하고 더 보기
+            </button>
           </div>
-        ))}
+        )}
       </div>
 
       <TravelDetailModal
-        travelId={selectedTravelId}
+        travelId={isLoggedIn ? selectedTravelId : null}
         onClose={() => setSelectedTravelId(null)}
-        onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)} // 그냥 selectedTravelId를 원본 id로 바꿔치기
+        onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)}
       />
     </div>
   )
