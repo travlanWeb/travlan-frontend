@@ -60,14 +60,24 @@ export interface TravelVisitItem {
 
 // 상세 조회 응답 전체
 export interface TravelDetail {
-    id: number
-    name: string
-    totalBudget: number
-    startDate: string
-    endDate: string
-    updatedAt: string
-    bags: TravelBagItem[]
-    visits: TravelVisitItem[]
+  id: number
+  name: string
+  userId: number
+  originalId: number | null
+  totalBudget: number
+  status: string
+  startDate: string
+  endDate: string
+  updatedAt: string
+  bags: TravelBagItem[]
+  visits: TravelVisitItem[]
+}
+
+// GET /users/{id} 응답
+export interface UserProfile {
+  id: number
+  name: string
+  profileImage: string
 }
 
 
