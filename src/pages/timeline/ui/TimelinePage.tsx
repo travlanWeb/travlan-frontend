@@ -11,6 +11,7 @@ import { api } from "../../../shared/api/axiosInstance"
 import { useTravelDraftStore } from "../../../entities/travel/model/useTravelDraftStore"
 import { useNavigate } from "react-router-dom"
 import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
+import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 
 export default function TimelinePage() {
     const navigate = useNavigate()
@@ -68,7 +69,8 @@ export default function TimelinePage() {
     const remainingAmount = totalBudget - usedAmount
     const usedPercent = totalBudget > 0 ? Math.min(100, (usedAmount / totalBudget) * 100) : 0
 
-    const handleSave = async (endpoint: string) => {
+    // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
+    const handleSave = async (status: string) => {
         if (!accessToken) return
         const userId = getUserIdFromToken(accessToken)
 
@@ -78,10 +80,10 @@ export default function TimelinePage() {
             endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
         }))
 
-        const payload = { userId, name, totalBudget, startDate, endDate, bags, visits: formattedVisits }
+        const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits }
 
         try {
-            const response = await api.post(endpoint, payload)
+            const response = await api.post('/travels', payload)
             console.log("저장 성공", response.data)
             navigate('/mypage')
         } catch (error) {
@@ -101,6 +103,7 @@ export default function TimelinePage() {
 
     // 예산 바 조건부 색상 변경을 위해 변수 선언
     const isOverBudget = usedAmount > totalBudget
+
 
 
     return (
@@ -302,13 +305,13 @@ export default function TimelinePage() {
 
             <div className="flex gap-3 mt-6">
                 <button
-                    onClick={() => handleSave('/travels/temp')}
+                    onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
                     className="rounded-pill border border-pebble text-deep-ink px-6 py-2.5 text-sm font-semibold"
                 >
                     임시저장
                 </button>
                 <button
-                    onClick={() => handleSave('/travels')}
+                    onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
                     className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
                 >
                     여행 저장하기

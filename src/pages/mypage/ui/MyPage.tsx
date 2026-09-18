@@ -1,44 +1,45 @@
-import { useState } from "react"
+import { useState, useEffect } from 'react'
+import { api } from '../../../shared/api/axiosInstance'
+import type { TravelCard } from '../../../entities/travel/model/types'
 
 export default function MyPage() {
+  const [draftTravels, setDraftTravels] = useState<TravelCard[]>([])
 
-  const [activeTab, setActiveTab] = useState<'created' | 'liked'>('created')
+  useEffect(() => {
+    const fetchDraftTravels = async () => {
+      try {
+        const response = await api.get('/travels')
+        // status가 DRAFT인 것만 걸러내기 (임시 확인용 - 원래는 userId로도 걸러야 함)
+        const drafts = response.data.filter((travel: TravelCard) => travel.status === 'DRAFT')
+        setDraftTravels(drafts)
+      } catch (error) {
+        console.error('임시저장 여행 조회 실패', error)
+      }
+    }
+    fetchDraftTravels()
+  }, [])
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
+    <div className="max-w-[1200px] mx-auto px-10 py-16">
+      <h1 className="text-2xl font-bold text-deep-ink mb-6">마이페이지</h1>
 
-      {/* 내가 만든 여행 */}
-      <div className="flex gap-6 border-b border-gray-200 mb-8">
-        <button
-        onClick={() => setActiveTab('created')}
-        className={`pb-3 text-sm font-semibold border-b-2 -mb-px ${
-          activeTab === 'created'
-          ? 'border-deep-ink text-deep-ink'
-          : 'border-transparent text-gray-400'
-        }`}
-        >
-          내가 만든 여행
-        </button>
+      <h2 className="text-deep-ink font-bold mb-3">
+        임시저장 여행 <span className="text-cool-ash font-normal">{draftTravels.length}곳</span>
+      </h2>
 
-
-        {/* 찜한 여행 */}
-        <button
-        onClick={() => setActiveTab('liked')}
-        className={`pb-3 text-sm font-semibold border-b-2 -mb-px ${
-          activeTab === 'liked'
-          ? 'border-deep-ink text-deep-ink'
-          : 'border-transparent text-gray-400'
-        }`}
-        >
-          찜한 여행
-        </button>
-      </div>
-
-      
-      {/* 값이 없을 경우 기본 상태 메시지 내보내기 */}
-      <div className="text-gray-400 text-sm py-20 text-center">
-        {activeTab === 'created' ? '아직 내가 만든 여행이 없어요' : '아직 찜한 여행이 없어요'}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {draftTravels.map((travel) => (
+          <div key={travel.id} className="border border-pebble rounded-flat p-4">
+            <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
+            <p className="text-sm text-cool-ash mb-1">
+              {travel.startDate} ~ {travel.endDate}
+            </p>
+            <p className="text-sm font-medium text-deep-ink">
+              예산 {travel.totalBudget.toLocaleString()}원
+            </p>
+            <p className="text-xs text-cool-ash mt-2">상태: {travel.status}</p>
+          </div>
+        ))}
       </div>
     </div>
   )
