@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+// import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
@@ -16,7 +16,7 @@ export default function MyPage() {
   const bio = '여행을 계획하는 중'
 
   // 내가 만든 여행 = DRAFT + COMPLETED 전부 포함 (이미 /travels/mine 자체가 내 것만 주니까 상태 구분 없이 다 보여줌)
-  const draftCount = myTravels.filter((t) => t.status === TRAVEL_STATUS.DRAFT).length
+  // const draftCount = myTravels.filter((t) => t.status === TRAVEL_STATUS.DRAFT).length
 
   const handleEdit = (travelId: number) => {
     navigate(`/travels/${travelId}/map`) // 기존 지도 페이지 재사용해서 수정 흐름으로
