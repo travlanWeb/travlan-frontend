@@ -13,7 +13,9 @@ import { useNavigate } from "react-router-dom"
 import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
 import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
-import { useParams } from "react-router-dom"
+import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeOptions"
+import { CATEGORY_DURATION_MINUTES } from "../../../entities/place/model/categoryMap"
+import { CATEGORY_FILTERS } from "../../../entities/place/model/categoryMap"
 
 export default function TimelinePage() {
     // const { travelId } = useParams()
@@ -25,7 +27,9 @@ export default function TimelinePage() {
     const visits = useSelector((state: RootState) => state.visit.items)
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
     const { name, startDate, endDate, totalBudget, originalId } = useTravelDraftStore()
-    console.log('TimelinePage 진입 시 originalId:', originalId) // 추가
+    const [draggedVisitId, setDraggedVisitId] = useState<number | null>(null)
+    const [selectedBagCategory, setSelectedBagCategory] = useState('전체')
+
 
     // 지금 보고 있는 Day (탭)
     const [selectedDay, setSelectedDay] = useState(1)
@@ -47,9 +51,13 @@ export default function TimelinePage() {
         .slice()
         .sort((a, b) => a.visitOrder - b.visitOrder)
 
-    // 이 장소가 "지금 선택된 Day"에 이미 추가되어 있는지
+    // 오늘(선택된 day)에 담겨있는지
     const isAddedToday = (placeId: number) =>
         visits.some((v) => v.placeId === placeId && v.day === selectedDay)
+
+    // 오늘이 아닌 다른 날에 담겨있는지
+    const isAddedOnOtherDay = (placeId: number) =>
+        visits.some((v) => v.placeId === placeId && v.day !== selectedDay)
 
     // 일정에 추가 / 빼기 토글
     const toggleAddToSchedule = (placeId: number) => {
@@ -75,6 +83,7 @@ export default function TimelinePage() {
     const usedAmount = visits.reduce((sum, v) => sum + (v.cost || 0), 0)
     const remainingAmount = totalBudget - usedAmount
     const usedPercent = totalBudget > 0 ? Math.min(100, (usedAmount / totalBudget) * 100) : 0
+    const timeOptions = generateTimeOptions()
 
     const handleMoveToPlace = (place: typeof bagItems[number]) => {
         if (!mapRef.current) return
@@ -84,7 +93,6 @@ export default function TimelinePage() {
 
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
-        console.log('저장 시점 originalId:', originalId) // 추가
         if (!accessToken) return
         const userId = getUserIdFromToken(accessToken)
 
@@ -98,10 +106,8 @@ export default function TimelinePage() {
 
         try {
             const response = await api.post('/travels', payload)
-            console.log("저장 성공", response.data)
             navigate('/mypage')
         } catch (error) {
-            console.error("저장 실패", error)
         }
     }
 
@@ -110,11 +116,6 @@ export default function TimelinePage() {
         .map((visit) => bagItems.find((item) => item.id === visit.placeId))
         .filter((place): place is typeof bagItems[number] => place !== undefined)
 
-    console.log('visitsForSelectedDay placeIds:', visitsForSelectedDay.map(v => v.placeId))
-    console.log('bagItems ids:', bagItems.map(item => item.id))
-    console.log('timelinePlaces:', timelinePlaces.length)
-
-
     useEffect(() => {
         if (timelinePlaces.length > 0 && mapRef.current) {
             const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
@@ -122,13 +123,32 @@ export default function TimelinePage() {
         }
     }, [selectedDay])
 
-    // const mapCenter = timelinePlaces.length > 0
-    //     ? { lat: timelinePlaces[0].latitude, lng: timelinePlaces[0].longitude }
-    //     : { lat: 35.8562, lng: 129.2247 }
-
 
     // 예산 바 조건부 색상 변경을 위해 변수 선언
     const isOverBudget = usedAmount > totalBudget
+
+
+    // 순서 바꾸는 함수 추가
+    const handleReorder = (targetPlaceId: number) => {
+        if (draggedVisitId === null || draggedVisitId === targetPlaceId) return
+
+        const draggedVisit = visitsForSelectedDay.find((v) => v.placeId === draggedVisitId)
+        const targetVisit = visitsForSelectedDay.find((v) => v.placeId === targetPlaceId)
+        if (!draggedVisit || !targetVisit) return
+
+        // 두 항목의 visitOrder를 서로 교환
+        dispatch(updateVisit({ placeId: draggedVisit.placeId, field: 'visitOrder', value: targetVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: targetVisit.placeId, field: 'visitOrder', value: draggedVisit.visitOrder }))
+
+        setDraggedVisitId(null)
+    }
+
+    // 타임라인 페이지의 여행가방에서도 카테고리 별로 구분하여 볼 수 있도록 구현
+
+    // 필터링된 여행가방 목록
+    const filteredBagItems = selectedBagCategory === '전체'
+        ? bagItems
+        : bagItems.filter((place) => place.category === selectedBagCategory)
 
 
 
@@ -168,8 +188,25 @@ export default function TimelinePage() {
                     <h2 className="text-deep-ink font-bold mb-1">여행가방 <span className="text-cool-ash font-normal">{bagItems.length}곳</span></h2>
                     <p className="text-xs text-cool-ash mb-4">아래 장소를 선택해 오늘 일정에 추가하세요.</p>
 
-                    {bagItems.map((place) => {
+                    {/* 카테고리 필터 추가하기 */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                        {CATEGORY_FILTERS.map((category) => (
+                            <button
+                                key={category}
+                                onClick={() => setSelectedBagCategory(category)}
+                                className={`px-3 py-1 text-xs rounded-pill border cursor-pointer ${selectedBagCategory === category
+                                        ? 'bg-deep-ink text-pure-white border-deep-ink'
+                                        : 'border-pebble text-cool-ash'
+                                    }`}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </div>
+
+                    {filteredBagItems.map((place) => {
                         const added = isAddedToday(place.id)
+                        const addedElsewhere = isAddedOnOtherDay(place.id)
                         return (
                             <div key={place.id} className="border-b border-pebble py-3">
                                 <div className="flex items-center justify-between mb-1">
@@ -181,9 +218,11 @@ export default function TimelinePage() {
                                 <p className="text-xs text-cool-ash mb-2">{place.category}</p>
                                 <button
                                     onClick={() => toggleAddToSchedule(place.id)}
-                                    className={`w-full rounded-pill py-1.5 text-xs font-semibold transition-colors ${added
+                                    className={`w-full rounded-pill py-1.5 text-xs font-semibold transition-colors cursor-pointer ${added
                                         ? 'bg-deep-ink text-pure-white'
-                                        : 'border border-pebble text-deep-ink'
+                                        : addedElsewhere
+                                            ? 'border border-pebble text-cool-ash bg-pebble/45' // 다른 날 담김 - 회색
+                                            : 'border border-pebble text-deep-ink' // 기본
                                         }`}
                                 >
                                     {added ? '일정에서 빼기' : '+ 일정에 추가'}
@@ -236,24 +275,61 @@ export default function TimelinePage() {
                                 if (!place) return null
 
                                 return (
-                                    <div key={visit.placeId} className="border border-pebble rounded-flat p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <input
-                                                type="time"
+                                    <div
+                                        key={visit.placeId}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            setDraggedVisitId(visit.placeId)
+                                            e.dataTransfer.effectAllowed = 'move' // 추가 - "이동" 동작임을 명시
+                                        }}
+                                        onDragOver={(e) => {
+                                            e.preventDefault()
+                                            e.dataTransfer.dropEffect = 'move' // 추가 - 드롭 시에도 "이동" 커서로
+                                        }}
+                                        onDrop={() => handleReorder(visit.placeId)}
+                                        className="border border-pebble rounded-flat p-4 relative"
+                                    >
+                                        {/* 드래그 핸들 - 오른쪽 상단 */}
+                                        <div className="absolute top-4 right-4 grid grid-cols-2 gap-1 cursor-grab">
+                                            {Array.from({ length: 6 }).map((_, i) => (
+                                                <div key={i} className="w-1 h-1 rounded-full bg-pebble" />
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mb-2 pr-6">
+                                            <select
                                                 value={visit.startTime}
-                                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: e.target.value }))}
+                                                onChange={(e) => {
+                                                    const newStartTime = e.target.value
+                                                    dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: newStartTime }))
+
+                                                    const duration = CATEGORY_DURATION_MINUTES[place.category]
+                                                    if (duration !== null && duration !== undefined) {
+                                                        const newEndTime = addMinutesToTime(newStartTime, duration)
+                                                        dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
+                                                    }
+                                                }}
                                                 className="border border-pebble px-2 py-1 text-sm text-cool-ash"
-                                            />
+                                            >
+                                                <option value="">시작 시간</option>
+                                                {timeOptions.map((time) => (
+                                                    <option key={time} value={time}>{time}</option>
+                                                ))}
+                                            </select>
                                             <span className="text-sm text-cool-ash">~</span>
-                                            <input
-                                                type="time"
+                                            <select
                                                 value={visit.endTime}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
                                                 className="border border-pebble px-2 py-1 text-sm text-cool-ash"
-                                            />
+                                            >
+                                                <option value="">종료 시간</option>
+                                                {timeOptions.map((time) => (
+                                                    <option key={time} value={time}>{time}</option>
+                                                ))}
+                                            </select>
                                         </div>
 
-                                        <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center justify-between mb-1 pr-6">
                                             <h3 className="font-bold text-deep-ink">{place.name}</h3>
                                             <span className="text-xs text-cool-ash">
                                                 {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
@@ -268,13 +344,6 @@ export default function TimelinePage() {
                                                 value={visit.cost}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
                                                 className="border border-pebble px-2 py-1 text-xs w-24"
-                                            />
-                                            <span className="text-xs text-cool-ash ml-4">순서</span>
-                                            <input
-                                                type="number"
-                                                value={visit.visitOrder}
-                                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'visitOrder', value: Number(e.target.value) }))}
-                                                className="border border-pebble px-2 py-1 text-xs w-16"
                                             />
                                         </div>
                                     </div>
