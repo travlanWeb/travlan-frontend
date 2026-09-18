@@ -26,6 +26,8 @@ export default function TimelinePage() {
     const visits = useSelector((state: RootState) => state.visit.items)
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
     const { name, startDate, endDate, totalBudget, originalId } = useTravelDraftStore()
+    const [draggedVisitId, setDraggedVisitId] = useState<number | null>(null)
+
 
     // 지금 보고 있는 Day (탭)
     const [selectedDay, setSelectedDay] = useState(1)
@@ -122,6 +124,22 @@ export default function TimelinePage() {
 
     // 예산 바 조건부 색상 변경을 위해 변수 선언
     const isOverBudget = usedAmount > totalBudget
+
+
+    // 순서 바꾸는 함수 추가
+    const handleReorder = (targetPlaceId: number) => {
+        if (draggedVisitId === null || draggedVisitId === targetPlaceId) return
+
+        const draggedVisit = visitsForSelectedDay.find((v) => v.placeId === draggedVisitId)
+        const targetVisit = visitsForSelectedDay.find((v) => v.placeId === targetPlaceId)
+        if (!draggedVisit || !targetVisit) return
+
+        // 두 항목의 visitOrder를 서로 교환
+        dispatch(updateVisit({ placeId: draggedVisit.placeId, field: 'visitOrder', value: targetVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: targetVisit.placeId, field: 'visitOrder', value: draggedVisit.visitOrder }))
+
+        setDraggedVisitId(null)
+    }
 
 
 
@@ -232,15 +250,34 @@ export default function TimelinePage() {
                                 if (!place) return null
 
                                 return (
-                                    <div key={visit.placeId} className="border border-pebble rounded-flat p-4">
-                                        <div className="flex items-center gap-2 mb-2">
+                                    <div
+                                        key={visit.placeId}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            setDraggedVisitId(visit.placeId)
+                                            e.dataTransfer.effectAllowed = 'move' // 추가 - "이동" 동작임을 명시
+                                        }}
+                                        onDragOver={(e) => {
+                                            e.preventDefault()
+                                            e.dataTransfer.dropEffect = 'move' // 추가 - 드롭 시에도 "이동" 커서로
+                                        }}
+                                        onDrop={() => handleReorder(visit.placeId)}
+                                        className="border border-pebble rounded-flat p-4 relative"
+                                    >
+                                        {/* 드래그 핸들 - 오른쪽 상단 */}
+                                        <div className="absolute top-4 right-4 grid grid-cols-2 gap-1 cursor-grab">
+                                            {Array.from({ length: 6 }).map((_, i) => (
+                                                <div key={i} className="w-1 h-1 rounded-full bg-pebble" />
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mb-2 pr-6">
                                             <select
                                                 value={visit.startTime}
                                                 onChange={(e) => {
                                                     const newStartTime = e.target.value
                                                     dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: newStartTime }))
 
-                                                    // 카테고리 기본 소요시간이 있으면 종료 시간 자동 계산
                                                     const duration = CATEGORY_DURATION_MINUTES[place.category]
                                                     if (duration !== null && duration !== undefined) {
                                                         const newEndTime = addMinutesToTime(newStartTime, duration)
@@ -267,7 +304,7 @@ export default function TimelinePage() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center justify-between mb-1 pr-6">
                                             <h3 className="font-bold text-deep-ink">{place.name}</h3>
                                             <span className="text-xs text-cool-ash">
                                                 {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
@@ -282,13 +319,6 @@ export default function TimelinePage() {
                                                 value={visit.cost}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
                                                 className="border border-pebble px-2 py-1 text-xs w-24"
-                                            />
-                                            <span className="text-xs text-cool-ash ml-4">순서</span>
-                                            <input
-                                                type="number"
-                                                value={visit.visitOrder}
-                                                onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'visitOrder', value: Number(e.target.value) }))}
-                                                className="border border-pebble px-2 py-1 text-xs w-16"
                                             />
                                         </div>
                                     </div>
