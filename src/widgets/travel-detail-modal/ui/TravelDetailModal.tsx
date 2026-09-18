@@ -6,6 +6,16 @@ import type { TravelDetail, UserProfile } from '../../../entities/travel/model/t
 import type { Place } from '../../../entities/place/model/types'
 import KakaoMap from '../../kakao-map/ui/KakaoMap'
 
+// 복사 기능 구현하며 import 
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { useTravelDraftStore } from '../../../entities/travel/model/useTravelDraftStore'
+import { useBagStore } from '../../../entities/bag/model/useBagStore'
+import { addVisit, clearVisits } from '../../../entities/travel/model/visitSlice'
+
+
+
+
 interface TravelDetailModalProps {
     travelId: number | null // null 이면 모달 닫혀있는 상태
     onClose: () => void // 닫기 버튼 눌렀을 때 부모에게 알림
@@ -20,6 +30,20 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const [error, setError] = useState<string | null>(null)
     const [author, setAuthor] = useState<UserProfile | null>(null) // 작성자 정보만 새로 추가
     const [originalAuthor, setOriginalAuthor] = useState<UserProfile | null>(null) // 원작자 표시
+
+    // 복사 기능 구현 함수 선언
+    // 함수 꺼내오기
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const setName = useTravelDraftStore((state) => state.setName)
+    const setStartDate = useTravelDraftStore((state) => state.setStartDate)
+    const setEndDate = useTravelDraftStore((state) => state.setEndDate)
+    const setTotalBudget = useTravelDraftStore((state) => state.setTotalBudget)
+    const clearBag = useBagStore((state) => state.clearBag) // 없다면 아래에서 추가 필요
+    const addBagItem = useBagStore((state) => state.addItem)
+    const setOriginalId = useTravelDraftStore((state) => state.setOriginalId)
+
+
 
     useEffect(() => {
         if (travelId === null) return
@@ -79,6 +103,39 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         }))
         : []
 
+    // 복사 기능 - 핸들러
+
+    const handleCopyToMyTravel = () => {
+        if (!detail) return
+        console.log('복사할 원본 detail.id:', detail.id) // 추가
+
+        clearBag()
+        dispatch(clearVisits())
+
+        setName(`${detail.name} (복사본)`)
+        setStartDate(detail.startDate)
+        setEndDate(detail.endDate)
+        setTotalBudget(detail.totalBudget)
+        setOriginalId(detail.id)
+        console.log('setOriginalId 호출 직후 store 값:', useTravelDraftStore.getState().originalId) // 추가
+
+        bagPlaces.forEach((place) => addBagItem(place))
+
+        detail.visits.forEach((visit) => {
+            dispatch(addVisit({
+                placeId: visit.placeId,
+                day: visit.day,
+                cost: visit.cost,
+                visitOrder: visit.visitOrder,
+                startTime: visit.startTime.slice(0, 5),
+                endTime: visit.endTime.slice(0, 5),
+            }))
+        })
+
+        onClose()
+        navigate('/travels/new/map')
+    }
+
     if (travelId === null) return null
 
 
@@ -112,9 +169,8 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             </div>
                             <button
                                 type="button"
-                                className="text-sm text-gray-400 cursor-not-allowed"
-                                disabled
-                                title="준비 중인 기능입니다"
+                                onClick={handleCopyToMyTravel}
+                                className="text-sm text-deep-ink underline"
                             >
                                 내 여행으로 복사하기
                             </button>

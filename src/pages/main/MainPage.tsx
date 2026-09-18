@@ -33,6 +33,7 @@ export default function MainPage() {
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
   const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget } = useTravelDraftStore()
+  console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
   const canProceedToTimeline = name && totalBudget // timeline 으로 넘길 수 있는지 판단하는 함수
