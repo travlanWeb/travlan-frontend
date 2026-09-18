@@ -15,7 +15,7 @@ import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 
 export default function TimelinePage() {
-    const { travelId } = useParams()
+    // const { travelId } = useParams()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
