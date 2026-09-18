@@ -44,8 +44,8 @@ export default function CommunityPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {travels.map((travel) => (
           <div
-          onClick={() => setSelectedTravelId(travel.id)} 
-          key={travel.id} className="border border-gray-200 rounded-flat p-4">
+            onClick={() => setSelectedTravelId(travel.id)}
+            key={travel.id} className="border border-gray-200 rounded-flat p-4">
             <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
             <p className="text-sm text-gray-500 mb-1">
               {travel.startDate} ~ {travel.endDate}
@@ -56,8 +56,12 @@ export default function CommunityPage() {
           </div>
         ))}
       </div>
-      
-      <TravelDetailModal travelId={selectedTravelId} onClose={() => setSelectedTravelId(null)}/>
+
+      <TravelDetailModal
+        travelId={selectedTravelId}
+        onClose={() => setSelectedTravelId(null)}
+        onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)} // 그냥 selectedTravelId를 원본 id로 바꿔치기
+      />
     </div>
   )
 }
