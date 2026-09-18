@@ -4,23 +4,27 @@ import { create } from 'zustand'
 // 타임라인으로 보내기 위해 컴포넌트 밖 독립 저장소 생성
 
 interface TravelDraftState {
-    name: string
-    startDate: string
-    endDate: string
-    totalBudget: number
-    setName: (name: string) => void
-    setStartDate: (startDate: string) => void
-    setEndDate: (endDate: string) => void
-    setTotalBudget: (totalBudget: number) => void
+  name: string
+  startDate: string
+  endDate: string
+  totalBudget: number
+  originalId: number | null // 추가 - 복사해서 시작한 여행이면 원본 id를 기억
+  setName: (name: string) => void
+  setStartDate: (date: string) => void
+  setEndDate: (date: string) => void
+  setTotalBudget: (budget: number) => void
+  setOriginalId: (id: number | null) => void // 추가
 }
 
 export const useTravelDraftStore = create<TravelDraftState>((set) => ({
-    name: '',
-    startDate: '',
-    endDate: '',
-    totalBudget: 0,
-    setName: (name) => set({name}),
-    setStartDate: (startDate) => set({startDate}),
-    setEndDate: (endDate) => set({endDate}),
-    setTotalBudget: (totalBudget) => set({totalBudget}),
+  name: '',
+  startDate: '',
+  endDate: '',
+  totalBudget: 0,
+  originalId: null, // 초기값
+  setName: (name) => set({ name }),
+  setStartDate: (date) => set({ startDate: date }),
+  setEndDate: (date) => set({ endDate: date }),
+  setTotalBudget: (budget) => set({ totalBudget: budget }),
+  setOriginalId: (id) => set({ originalId: id }), // 추가
 }))

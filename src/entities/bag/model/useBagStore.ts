@@ -7,6 +7,7 @@ interface BagState {
     addItem: (place: Place) => void // 장소 하나 받아서 담기
     removeItem: (placeId: number) => void // 장소 빼기
     isInBag: (placeId: number) => boolean // id 받아서 참/거짓 반환 (여행가방 안에 있는지 없는지)
+    clearBag: () => void 
 }
 
 // BagState 의 형태를 하고 있는 BagStore 생성
@@ -28,5 +29,9 @@ export const useBagStore = create<BagState>((set, get) => ({
 
     isInBag: (placeId) => { // 가방 안에 있는지 확인
         return get().items.some((item) => item.id === placeId) // 가방에 place 있다면 true, 없으면 false로 반환
+    },
+
+    clearBag: () => { // 전체 비우기 - 복사 시작 전 기존 여행가방 내용을 지우기 위해 필요
+        set({ items: [] })
     },
 }))

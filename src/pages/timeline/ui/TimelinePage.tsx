@@ -13,15 +13,17 @@ import { useNavigate } from "react-router-dom"
 import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
 import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
+import { useParams } from "react-router-dom"
 
 export default function TimelinePage() {
-    // const { travelId } = useParams()
+    const { travelId } = useParams()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
     const visits = useSelector((state: RootState) => state.visit.items)
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
-    const { name, startDate, endDate, totalBudget } = useTravelDraftStore()
+    const { name, startDate, endDate, totalBudget, originalId } = useTravelDraftStore()
+    console.log('TimelinePage 진입 시 originalId:', originalId) // 추가
 
     // 지금 보고 있는 Day (탭)
     const [selectedDay, setSelectedDay] = useState(1)
@@ -73,6 +75,7 @@ export default function TimelinePage() {
 
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
+        console.log('저장 시점 originalId:', originalId) // 추가
         if (!accessToken) return
         const userId = getUserIdFromToken(accessToken)
 
@@ -82,7 +85,7 @@ export default function TimelinePage() {
             endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
         }))
 
-        const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits }
+        const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
 
         try {
             const response = await api.post('/travels', payload)
