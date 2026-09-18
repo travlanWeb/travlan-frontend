@@ -29,6 +29,7 @@ export interface TravelCard {
     startDate: string
     endDate: string
     updatedAt: string
+    status: string
 }
 
 // bags 배열 안의 항목 하나
@@ -68,3 +69,4 @@ export interface TravelDetail {
     bags: TravelBagItem[]
     visits: TravelVisitItem[]
 }
+
