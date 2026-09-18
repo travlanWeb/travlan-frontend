@@ -15,6 +15,7 @@ import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeOptions"
 import { CATEGORY_DURATION_MINUTES } from "../../../entities/place/model/categoryMap"
+import { CATEGORY_FILTERS } from "../../../entities/place/model/categoryMap"
 
 export default function TimelinePage() {
     // const { travelId } = useParams()
@@ -27,6 +28,7 @@ export default function TimelinePage() {
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
     const { name, startDate, endDate, totalBudget, originalId } = useTravelDraftStore()
     const [draggedVisitId, setDraggedVisitId] = useState<number | null>(null)
+    const [selectedBagCategory, setSelectedBagCategory] = useState('전체')
 
 
     // 지금 보고 있는 Day (탭)
@@ -141,6 +143,13 @@ export default function TimelinePage() {
         setDraggedVisitId(null)
     }
 
+    // 타임라인 페이지의 여행가방에서도 카테고리 별로 구분하여 볼 수 있도록 구현
+
+    // 필터링된 여행가방 목록
+    const filteredBagItems = selectedBagCategory === '전체'
+        ? bagItems
+        : bagItems.filter((place) => place.category === selectedBagCategory)
+
 
 
     return (
@@ -179,7 +188,23 @@ export default function TimelinePage() {
                     <h2 className="text-deep-ink font-bold mb-1">여행가방 <span className="text-cool-ash font-normal">{bagItems.length}곳</span></h2>
                     <p className="text-xs text-cool-ash mb-4">아래 장소를 선택해 오늘 일정에 추가하세요.</p>
 
-                    {bagItems.map((place) => {
+                    {/* 카테고리 필터 추가하기 */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                        {CATEGORY_FILTERS.map((category) => (
+                            <button
+                                key={category}
+                                onClick={() => setSelectedBagCategory(category)}
+                                className={`px-3 py-1 text-xs rounded-pill border cursor-pointer ${selectedBagCategory === category
+                                        ? 'bg-deep-ink text-pure-white border-deep-ink'
+                                        : 'border-pebble text-cool-ash'
+                                    }`}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </div>
+
+                    {filteredBagItems.map((place) => {
                         const added = isAddedToday(place.id)
                         const addedElsewhere = isAddedOnOtherDay(place.id)
                         return (
