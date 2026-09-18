@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> }, // '/' 정확히 일치할 때
       { path: 'travels/:travelId/map', element: <MainPage /> },
-      { path: 'timeline', element: <TimelinePage /> },
+      { path: 'timeline/:travelId', element: <TimelinePage /> },
       { path: 'community', element: <CommunityPage /> },
       { path: 'mypage', element: <MyPage /> },
       { path: 'login', element: <LoginPage /> },

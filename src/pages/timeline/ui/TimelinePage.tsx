@@ -12,8 +12,10 @@ import { useTravelDraftStore } from "../../../entities/travel/model/useTravelDra
 import { useNavigate } from "react-router-dom"
 import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
 import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
+import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 
 export default function TimelinePage() {
+    // const { travelId } = useParams()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
@@ -112,6 +114,7 @@ export default function TimelinePage() {
             <div className="border-b border-pebble pb-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-2xl font-bold text-deep-ink">{name || '여행 이름'}</h1>
+                    <TravelNavTabs />
                 </div>
 
                 <div className="flex items-center justify-between mb-2">

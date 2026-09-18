@@ -15,6 +15,7 @@ import { mockTravel } from '../../entities/travel/model/mockTravel'
 import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
 import { usePlaces } from '../../entities/place/model/usePlaces'
 import { CATEGORY_FILTERS } from '../../entities/place/model/categoryMap'
+import TravelNavTabs from '../../widgets/travel-nav-tabs/TravelNavTabs'
 
 
 export default function MainPage() {
@@ -67,8 +68,8 @@ export default function MainPage() {
   }
 
 
-  const handleSendToTimeline = () => { // timeline 페이지로 이동하는 함수 정의
-    navigate('/timeline')
+  const handleSendToTimeline = () => { // timeline 으로 이동하는 함수 정의
+    navigate(`/timeline/${travelId}`)
   }
 
 
@@ -121,48 +122,51 @@ export default function MainPage() {
       <div className="max-w-[1200px] mx-auto px-10">
 
         <div className="border-b border-pebble py-6">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
 
-            {isEditingTravelInfo ? (
-              <>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="border border-pebble px-2 py-1 text-xl font-bold"
-                />
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="border border-pebble px-2 py-1"
-                />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="border border-pebble px-2 py-1"
-                />
-                <input
-                  type="number"
-                  value={totalBudget}
-                  onChange={(e) => setTotalBudget(Number(e.target.value))}
-                  className="border border-pebble px-2 py-1"
-                />
-                <button onClick={() => setIsEditingTravelInfo(false)}>완료</button>
-              </>
-            ) : (
-              <>
-                <h1 className="text-xl text-deep-ink">{name || '여행 이름'}</h1>
-                <span className="text-sm text-cool-ash">
-                  {startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)} · ${getDayCount(startDate, endDate)}일` : '기간 미정'}
-                </span>
-                <span className="text-sm text-cool-ash">
-                  예산 {totalBudget.toLocaleString()}원
-                </span>
-                <button onClick={() => setIsEditingTravelInfo(true)}>✏️</button>
-              </>
-            )}
+              {isEditingTravelInfo ? (
+                <>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="border border-pebble px-2 py-1 text-xl font-bold"
+                  />
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="border border-pebble px-2 py-1"
+                  />
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="border border-pebble px-2 py-1"
+                  />
+                  <input
+                    type="number"
+                    value={totalBudget}
+                    onChange={(e) => setTotalBudget(Number(e.target.value))}
+                    className="border border-pebble px-2 py-1"
+                  />
+                  <button onClick={() => setIsEditingTravelInfo(false)}>완료</button>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-xl text-deep-ink">{name || '여행 이름'}</h1>
+                  <span className="text-sm text-cool-ash">
+                    {startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)} · ${getDayCount(startDate, endDate)}일` : '기간 미정'}
+                  </span>
+                  <span className="text-sm text-cool-ash">
+                    예산 {totalBudget.toLocaleString()}원
+                  </span>
+                  <button onClick={() => setIsEditingTravelInfo(true)}>✏️</button>
+                </>
+              )}
+            </div>
+            <TravelNavTabs disableTimeline={!canProceedToTimeline}/>
           </div>
         </div>
 
@@ -207,6 +211,7 @@ export default function MainPage() {
             ))}
 
           </div>
+
 
           {/* 3단: 상세정보 + 여행가방을 세로로 묶은 하나의 컬럼 */}
           <div className="w-72 flex flex-col gap-6 h-full">
