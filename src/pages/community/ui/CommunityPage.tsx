@@ -1,6 +1,7 @@
 // 커뮤니티 페이지 기본 뼈대
 // 9/14 - 페이지 구조(제목 + 목록) 잡아두기
 // 9/16 - api 연결, 데이터 불러오기 구현
+// 9/20 - 
 
 import { useState, useEffect, useMemo } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
@@ -10,9 +11,16 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
 import TravelCardItem from "./TravelCardItem"
+import RangeSlider from "../../../shared/ui/RangeSlider"
+
+// 슬라이더용 max budget 선언
+const MAX_BUDGET = 10000000
 
 
 export default function CommunityPage() {
+
+  // 슬라이더용
+  const [budgetRange, setBudgetRange] = useState<[number, number]>([0, MAX_BUDGET])
 
   // 비로그인 시 보여줄 더미 카드 (실제 데이터 아님, 블러 미리보기 전용)
   const MOCK_PREVIEW_CARDS: TravelCard[] = [
@@ -31,11 +39,20 @@ export default function CommunityPage() {
   const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
 
   const searchedTravels = useMemo(() => {
-    if (!searchQuery.trim()) return displayedTravels
-    return displayedTravels.filter((travel) =>
-      travel.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    let result = displayedTravels
+
+    if (searchQuery.trim()) {
+      result = result.filter((travel) =>
+        travel.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    }
+
+    result = result.filter((travel) =>
+      travel.totalBudget >= budgetRange[0] && travel.totalBudget <= budgetRange[1]
     )
-  }, [displayedTravels, searchQuery])
+
+    return result
+  }, [displayedTravels, searchQuery, budgetRange])
 
 
   useEffect(() => {
@@ -61,13 +78,23 @@ export default function CommunityPage() {
         <h1 className="text-3xl font-bold mb-2">커뮤니티</h1>
         <p className="text-gray-500 mb-6">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
 
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="여행 이름으로 검색"
-          className="border border-pebble px-4 py-2 text-sm w-72"
-        />
+        <div className="flex flex-col gap-4 max-w-xs">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="여행 이름으로 검색"
+            className="border border-pebble px-4 py-2 text-sm w-72"
+          />
+          <RangeSlider
+            min={0}
+            max={MAX_BUDGET}
+            step={10000}
+            value={budgetRange}
+            onChange={setBudgetRange}
+            formatLabel={(v) => `${v.toLocaleString()}원`}
+          />
+        </div>
       </div>
 
       <div className="relative">
