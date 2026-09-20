@@ -9,15 +9,16 @@ import TravelDetailModal from "../../../widgets/travel-detail-modal/ui/TravelDet
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
+import TravelCardItem from "./TravelCardItem"
 
 
 export default function CommunityPage() {
 
   // 비로그인 시 보여줄 더미 카드 (실제 데이터 아님, 블러 미리보기 전용)
-  const MOCK_PREVIEW_CARDS = [
-    { id: -1, name: '제주 힐링 여행', startDate: '2026-10-01', endDate: '2026-10-03', totalBudget: 350000 },
-    { id: -2, name: '부산 바다 여행', startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000 },
-    { id: -3, name: '경주 역사 탐방', startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000 },
+  const MOCK_PREVIEW_CARDS: TravelCard[] = [
+    { id: -1, name: '제주 힐링 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, startDate: '2026-10-01', endDate: '2026-10-03', totalBudget: 350000, updatedAt: '2026-01-01T00:00:00' },
+    { id: -2, name: '부산 바다 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000, updatedAt: '2026-01-01T00:00:00' },
+    { id: -3, name: '경주 역사 탐방', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000, updatedAt: '2026-01-01T00:00:00' },
   ]
 
   const navigate = useNavigate()
@@ -72,19 +73,11 @@ export default function CommunityPage() {
       <div className="relative">
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${!isLoggedIn ? 'blur-sm pointer-events-none select-none' : ''}`}>
           {searchedTravels.map((travel) => (
-            <div
-              onClick={() => isLoggedIn && setSelectedTravelId(travel.id)}
+            <TravelCardItem
               key={travel.id}
-              className="border border-gray-200 rounded-flat p-4"
-            >
-              <h3 className="font-semibold text-deep-ink mb-1">{travel.name}</h3>
-              <p className="text-sm text-gray-500 mb-1">
-                {travel.startDate} ~ {travel.endDate}
-              </p>
-              <p className="text-sm font-medium">
-                예산 {travel.totalBudget.toLocaleString()}원
-              </p>
-            </div>
+              travel={travel}
+              onClick={() => setSelectedTravelId(travel.id)}
+            />
           ))}
         </div>
 

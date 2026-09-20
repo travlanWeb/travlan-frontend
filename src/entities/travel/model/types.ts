@@ -25,11 +25,15 @@ export interface Visit {
 export interface TravelCard {
     id: number
     name: string
+    userId: number
+    originalId: number | null
     totalBudget: number
+    status: string
+    saveCount: number
+    edited: boolean
     startDate: string
     endDate: string
     updatedAt: string
-    status: string
 }
 
 // bags 배열 안의 항목 하나
