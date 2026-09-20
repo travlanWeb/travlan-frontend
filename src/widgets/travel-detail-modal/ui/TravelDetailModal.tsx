@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 import { useTravelDraftStore } from '../../../entities/travel/model/useTravelDraftStore'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { addVisit, clearVisits } from '../../../entities/travel/model/visitSlice'
+import type { DayRoute } from '../../../entities/travel/model/types'
 
 interface TravelDetailModalProps {
     travelId: number | null
@@ -29,6 +30,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const [selectedDay, setSelectedDay] = useState(1)
     const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 지도 최초 위치만 담당 (이후 이동은 panTo가 처리)
     const mapRef = useRef<kakao.maps.Map | null>(null) // 지도 인스턴스를 저장해서 panTo를 호출하기 위함
+    const [routes, setRoutes] = useState<DayRoute[]>([])
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -46,6 +48,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         setDetail(null)
         setAuthor(null)
         setOriginalAuthor(null)
+        setRoutes([])
         setError(null)
         setIsLoading(true)
         setSelectedDay(1)
@@ -63,6 +66,11 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                     const originalAuthorResponse = await api.get(`/users/${originalTravelResponse.data.userId}`)
                     setOriginalAuthor(originalAuthorResponse.data)
                 }
+
+                // 경로/소요시간 조회 추가
+                const routesResponse = await api.get(`/travels/${travelId}/routes`)
+                setRoutes(routesResponse.data)
+
             } catch (err) {
                 console.error("여행 상세 조회 실패", err)
                 setError("여행 정보를 불러오지 못했습니다.")
@@ -107,6 +115,12 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const dayRoutePlaces = visitsForSelectedDay
         .map((visit) => bagPlaces.find((p) => p.id === visit.placeId))
         .filter((p): p is Place => p !== undefined)
+
+    // 경로 계산
+    const currentDayRoute = routes.find((r) => r.day === selectedDay)
+
+    const getLegAfter = (visitId: number) =>
+        currentDayRoute?.legs.find((leg) => leg.fromVisitId === visitId)
 
     // Day가 바뀌면 그 날의 첫 장소로 부드럽게 이동
     useEffect(() => {
@@ -228,24 +242,34 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                 )}
 
                                 <div className="flex flex-col gap-4">
-                                    {visitsForSelectedDay.map((visit) => {
+                                    {visitsForSelectedDay.map((visit, index) => {
                                         const place = dayRoutePlaces.find((p) => p.id === visit.placeId)
+                                        const leg = getLegAfter(visit.id)
+
                                         return (
-                                            <div
-                                                key={visit.id}
-                                                onClick={() => place && handleMoveToPlace(place)}
-                                                className="border border-pebble rounded-flat p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
-                                            >
-                                                <p className="text-sm text-cool-ash mb-1">
-                                                    {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
-                                                </p>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <h3 className="font-bold text-deep-ink">{visit.name}</h3>
-                                                    <span className="text-xs text-cool-ash">
-                                                        {visit.cost > 0 ? `${visit.cost.toLocaleString()}원` : '가격 미정'}
-                                                    </span>
+                                            <div key={visit.id}>
+                                                <div
+                                                    onClick={() => place && handleMoveToPlace(place)}
+                                                    className="border border-pebble rounded-flat p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
+                                                >
+                                                    <p className="text-sm text-cool-ash mb-1">
+                                                        {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
+                                                    </p>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <h3 className="font-bold text-deep-ink">{visit.name}</h3>
+                                                        <span className="text-xs text-cool-ash">
+                                                            {visit.cost > 0 ? `${visit.cost.toLocaleString()}원` : '가격 미정'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-cool-ash">{visit.address}</p>
                                                 </div>
-                                                <p className="text-sm text-cool-ash">{visit.address}</p>
+
+                                                {index < visitsForSelectedDay.length - 1 && leg?.available && (
+                                                    <div className="flex items-center gap-2 py-2 pl-4 text-xs text-cool-ash">
+                                                        <span>🚗</span>
+                                                        <span>{(leg.distance / 1000).toFixed(1)}km · 약 {Math.round(leg.duration / 60)}분</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )
                                     })}
@@ -293,7 +317,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             </div>
                         </div>
 
-                        {/* 찜하기, 수정해서 내 여행으로 저장하기 버튼 */}
+                        {/* 하단 버튼 */}
                         <div className="border-t border-pebble px-8 py-5 shrink-0 flex gap-3">
                             <button
                                 type="button"
@@ -315,4 +339,5 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
             </div>
         </div>
     )
+
 }

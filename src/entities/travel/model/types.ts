@@ -95,3 +95,16 @@ export interface MyTravelCard {
   endDate: string
   updatedAt: string
 }
+
+export interface RouteLeg {
+    fromVisitId: number
+    toVisitId: number
+    distance: number // km
+    duration: number // minute
+    available: boolean
+}
+
+export interface DayRoute {
+    day: number
+    legs: RouteLeg[]
+}
