@@ -2,7 +2,7 @@
 // 9/14 - 페이지 구조(제목 + 목록) 잡아두기
 // 9/16 - api 연결, 데이터 불러오기 구현
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
 import { api } from "../../../shared/api/axiosInstance"
 import TravelDetailModal from "../../../widgets/travel-detail-modal/ui/TravelDetailModal"
@@ -24,7 +24,17 @@ export default function CommunityPage() {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
   const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null) // modal
   const [travels, setTravels] = useState<TravelCard[]>([]) // 받아온 데이터 담기
+  const [searchQuery, setSearchQuery] = useState('') // 검색 기능 추가
+
+
   const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
+
+  const searchedTravels = useMemo(() => {
+    if (!searchQuery.trim()) return displayedTravels
+    return displayedTravels.filter((travel) =>
+      travel.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    )
+  }, [displayedTravels, searchQuery])
 
 
   useEffect(() => {
@@ -48,12 +58,20 @@ export default function CommunityPage() {
     <div className="max-w-[1200px] mx-auto px-10 py-16">
       <div className="border-b border-gray-200 pb-8 mb-8">
         <h1 className="text-3xl font-bold mb-2">커뮤니티</h1>
-        <p className="text-gray-500">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
+        <p className="text-gray-500 mb-6">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
+
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="여행 이름으로 검색"
+          className="border border-pebble px-4 py-2 text-sm w-72"
+        />
       </div>
 
       <div className="relative">
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${!isLoggedIn ? 'blur-sm pointer-events-none select-none' : ''}`}>
-          {displayedTravels.map((travel) => (
+          {searchedTravels.map((travel) => (
             <div
               onClick={() => isLoggedIn && setSelectedTravelId(travel.id)}
               key={travel.id}

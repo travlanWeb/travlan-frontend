@@ -11,6 +11,7 @@ export default function MyPage() {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
   const name = useSelector((state: RootState) => state.auth.name)
   const myTravels = useMyTravels()
+  const profileImage = useSelector((state: RootState) => state.auth.profileImage)
 
   // TODO: 한줄소개는 백엔드 필드 생기면 실제 값으로 교체 예정
   const bio = '여행을 계획하는 중'
@@ -51,8 +52,12 @@ export default function MyPage() {
       {/* 프로필 카드 */}
       <div className="border border-pebble rounded-flat p-8 flex items-center justify-between mb-12">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-pebble/30 flex items-center justify-center text-xs text-cool-ash">
-            프로필
+          <div className="w-20 h-20 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">
+            {profileImage ? (
+              <img src={profileImage} alt="프로필" className="w-full h-full object-cover" />
+            ) : (
+              '프로필'
+            )}
           </div>
           <div>
             <h1 className="text-xl font-bold text-deep-ink mb-1">{name || '여행자'}</h1>
@@ -68,12 +73,15 @@ export default function MyPage() {
               </div>
               <div>
                 <p className="text-lg font-bold text-deep-ink">-</p>
-                <p className="text-xs text-cool-ash">받은 좋아요</p>
+                <p className="text-xs text-cool-ash">받은 찜</p>
               </div>
             </div>
           </div>
         </div>
-        <button className="rounded-pill border border-pebble text-deep-ink px-5 py-2 text-sm font-semibold">
+        <button
+          onClick={() => navigate('/mypage/edit')}
+          className="rounded-pill border border-pebble text-deep-ink px-5 py-2 text-sm font-semibold"
+        >
           정보 수정
         </button>
       </div>

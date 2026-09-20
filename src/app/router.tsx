@@ -10,7 +10,7 @@ import TimelinePage from '../pages/timeline/ui/TimelinePage'
 import LoginPage from '../pages/login/LoginPage'
 import SignupPage from '../pages/login/SignupPage'
 import { useKakaoLoader } from 'react-kakao-maps-sdk'
-
+import EditProfilePage from '../pages/mypage/ui/EditProfilePage'
 
 function RootLayout() {
   // 앱이 처음 로드될 때 카카오 지도 SDK를 한 번만 불러옴
@@ -41,6 +41,7 @@ export const router = createBrowserRouter([
       { path: 'mypage', element: <MyPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
+      { path: 'mypage/edit', element: <EditProfilePage />}
     ],
   },
 ])
