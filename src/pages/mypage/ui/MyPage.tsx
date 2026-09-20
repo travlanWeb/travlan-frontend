@@ -12,6 +12,8 @@ export default function MyPage() {
   const name = useSelector((state: RootState) => state.auth.name)
   const myTravels = useMyTravels()
 
+  const totalSaveCount = myTravels.reduce((sum, t) => sum + t.saveCount, 0)
+
   // TODO: 한줄소개는 백엔드 필드 생기면 실제 값으로 교체 예정
   const bio = '여행을 계획하는 중'
 
@@ -67,8 +69,8 @@ export default function MyPage() {
                 <p className="text-xs text-cool-ash">찜한 여행</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-deep-ink">-</p>
-                <p className="text-xs text-cool-ash">받은 좋아요</p>
+                <p className="text-lg font-bold text-deep-ink">{totalSaveCount}</p>
+                <p className="text-xs text-cool-ash">받은 찜</p>
               </div>
             </div>
           </div>

@@ -89,6 +89,7 @@ export interface MyTravelCard {
   originalId: number | null
   totalBudget: number
   status: string
+  saveCount: number // 받은 찜 개수 추가
   startDate: string
   endDate: string
   updatedAt: string
