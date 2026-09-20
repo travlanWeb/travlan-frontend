@@ -46,7 +46,8 @@ export default function MainPage() {
   // 정보 수정 상태 useEffect
   const [isEditingTravelInfo, setIsEditingTravelInfo] = useState(false)
 
-
+  // 장소 검색 기능 추가
+  const [searchQuery, setSearchQuery] = useState('')
 
 
 
@@ -84,10 +85,18 @@ export default function MainPage() {
   //   : places.filter((place) => place.category === selectedCategory)
 
   const filteredPlaces = useMemo(() => {
-    return selectedCategory === '전체'
+    let result = selectedCategory === '전체'
       ? places
       : places.filter((place) => place.category === selectedCategory)
-  }, [places, selectedCategory])
+
+    if (searchQuery.trim()) {
+      result = result.filter((place) =>
+        place.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    }
+
+    return result
+  }, [places, selectedCategory, searchQuery])
 
 
 
@@ -171,6 +180,16 @@ export default function MainPage() {
           </div>
         </div>
 
+        {/* 카테고리 필터 영역 위나 옆에 추가 */}
+        <div className="flex items-center gap-2 mt-6 mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="장소 이름으로 검색"
+            className="border border-pebble px-4 py-2 text-sm w-64"
+          />
+        </div>
 
 
         {/* 카테고리 필터 영역 */}

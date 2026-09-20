@@ -152,6 +152,17 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
         navigate('/travels/new/map')
     }
 
+    const handleLike = async () => {
+        if (!detail) return
+        try {
+            await api.post('/travels/like', { travelId: detail.id })
+            onClose()
+            navigate('/mypage') // 마이페이지로 이동하는 게 좋을지...?
+        } catch (error) {
+            console.log('찜하기 실패', error)
+        }
+    }
+
     if (travelId === null) return null
 
     return (
@@ -282,14 +293,21 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             </div>
                         </div>
 
-                        {/* 하단 복사 버튼 */}
-                        <div className="border-t border-pebble px-8 py-5 shrink-0">
+                        {/* 찜하기, 수정해서 내 여행으로 저장하기 버튼 */}
+                        <div className="border-t border-pebble px-8 py-5 shrink-0 flex gap-3">
+                            <button
+                                type="button"
+                                onClick={handleLike}
+                                className="rounded-pill border border-pebble text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                            >
+                                찜하기
+                            </button>
                             <button
                                 type="button"
                                 onClick={handleCopyToMyTravel}
                                 className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
                             >
-                                내 여행으로 복사하기
+                                수정해서 내 여행으로 저장
                             </button>
                         </div>
                     </>
