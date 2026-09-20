@@ -16,9 +16,11 @@ import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeOptions"
 import { CATEGORY_DURATION_MINUTES } from "../../../entities/place/model/categoryMap"
 import { CATEGORY_FILTERS } from "../../../entities/place/model/categoryMap"
+import { useParams } from "react-router-dom"
+
 
 export default function TimelinePage() {
-    // const { travelId } = useParams()
+    const { travelId } = useParams()
     const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 최초 위치만
     const mapRef = useRef<kakao.maps.Map | null>(null)
     const navigate = useNavigate()
@@ -93,23 +95,32 @@ export default function TimelinePage() {
 
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
-        if (!accessToken) return
-        const userId = getUserIdFromToken(accessToken)
+    if (!accessToken) return
+    const userId = getUserIdFromToken(accessToken)
 
-        const formattedVisits = visits.map((visit) => ({
-            ...visit,
-            startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
-            endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
-        }))
+    const formattedVisits = visits.map((visit) => ({
+        ...visit,
+        startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
+        endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
+    }))
 
-        const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
-
-        try {
-            // const response = await api.post('/travels', payload)
-            navigate('/mypage')
-        } catch (error) {
+    try {
+        if (travelId && travelId !== 'new') {
+            // 기존 여행 수정 - PUT, userId/originalId 없음
+            const payload = { name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits }
+            const response = await api.put(`/travels/${travelId}`, payload)
+            console.log("수정 성공", response.data)
+        } else {
+            // 신규 생성 - POST, userId/originalId 포함
+            const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
+            const response = await api.post('/travels', payload)
+            console.log("저장 성공", response.data)
         }
+        navigate('/mypage')
+    } catch (error) {
+        console.error("저장 실패", error)
     }
+}
 
     // 지도에 찍을 좌표들 - 선택된 Day의 visitOrder 순서대로
     const timelinePlaces = visitsForSelectedDay

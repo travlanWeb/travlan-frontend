@@ -11,11 +11,14 @@ import BagPanel from '../../widgets/bag-panel/BagPanel'
 import { useBagStore } from '../../entities/bag/model/useBagStore'
 import KakaoMap from '../../widgets/kakao-map/ui/KakaoMap'
 import { useEffect } from 'react'
-import { mockTravel } from '../../entities/travel/model/mockTravel'
 import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
 import { usePlaces } from '../../entities/place/model/usePlaces'
 import { CATEGORY_FILTERS } from '../../entities/place/model/categoryMap'
 import TravelNavTabs from '../../widgets/travel-nav-tabs/TravelNavTabs'
+import { useDispatch } from 'react-redux'
+import { api } from '../../shared/api/axiosInstance'
+import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
+
 
 
 export default function MainPage() {
@@ -32,7 +35,7 @@ export default function MainPage() {
   // const [totalBudget, setTotalBudget] = useState(0)
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
-  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget } = useTravelDraftStore()
+  const { name, startDate, endDate, totalBudget, originalId, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId } = useTravelDraftStore()
   console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
@@ -99,18 +102,86 @@ export default function MainPage() {
   }, [places, selectedCategory, searchQuery])
 
 
+  const dispatch = useDispatch()
+  const clearBag = useBagStore((state) => state.clearBag)
+  const addBagItem = useBagStore((state) => state.addItem)
 
 
+  // 여행 수정 관련
 
   useEffect(() => {
-    if (!isNewTravel) {
-      setName(mockTravel.name)
-      setStartDate(mockTravel.startDate ?? '')
-      setEndDate(mockTravel.endDate ?? '')
-      setTotalBudget(mockTravel.totalBudget)
+    if (isNewTravel) {
+      // 이전 편집 내용 남아있을 경우 저장 관련 경고 메시지 추가
+      const hasUnsavedDraft = name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
 
+      if (hasUnsavedDraft) {
+        const confirmLeave = confirm('저장하지 않은 변경사항이 있습니다. 계속하면 변경사항이 사라집니다. 계속하시겠습니까?')
+        if (!confirmLeave) {
+          // 취소 시 이전 화면으로 돌아가기
+          navigate(-1)
+          return
+        }
+      }
+      
+      // 신규 여행 시작 시 남아있는 데이터 초기화
+      setName('')
+        setStartDate('')
+        setEndDate('')
+        setTotalBudget(0)
+        setOriginalId(null)
+        clearBag()
+        dispatch(clearVisits())
+        return
     }
-  }, [isNewTravel])
+
+
+    const fetchTravelForEdit = async () => {
+        try {
+            const response = await api.get(`/travels/${travelId}`)
+            const travel = response.data
+            console.log('불러온 travel.bags:', travel.bags) // 추가
+
+            setName(travel.name)
+            setStartDate(travel.startDate ?? '')
+            setEndDate(travel.endDate ?? '')
+            setTotalBudget(travel.totalBudget)
+
+            // 여행가방 채우기
+            clearBag()
+            const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
+                id: bag.placeId,
+                apiId: '',
+                name: bag.placeName,
+                category: '',
+                address: bag.address,
+                price: null,
+                latitude: bag.latitude,
+                longitude: bag.longitude,
+                imgUrl: '',
+                tel: '',
+                overview: '',
+            }))
+            bagPlaces.forEach((place) => addBagItem(place))
+
+            // 일정 채우기
+            dispatch(clearVisits())
+            travel.visits.forEach((visit: any) => {
+                dispatch(addVisit({
+                    placeId: visit.placeId,
+                    day: visit.day,
+                    cost: visit.cost,
+                    visitOrder: visit.visitOrder,
+                    startTime: visit.startTime.slice(0, 5),
+                    endTime: visit.endTime.slice(0, 5),
+                }))
+            })
+        } catch (error) {
+            console.error('여행 정보 조회 실패', error)
+        }
+    }
+
+    fetchTravelForEdit()
+}, [isNewTravel, travelId])
 
 
 
