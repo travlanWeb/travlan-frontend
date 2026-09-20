@@ -87,8 +87,10 @@ export interface MyTravelCard {
   name: string
   userId: number
   originalId: number | null
+  edited: boolean // 리믹스 등
   totalBudget: number
   status: string
+  saveCount: number // 받은 찜 개수 추가
   startDate: string
   endDate: string
   updatedAt: string
