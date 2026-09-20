@@ -107,6 +107,19 @@ export default function MainPage() {
   const addBagItem = useBagStore((state) => state.addItem)
 
 
+  // 예산 입력창 관련
+
+  const handleBudgetInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^0-9]/g, '') // 숫자 아닌 문자 다 제거 (콤마 포함)
+    const numericValue = rawValue === '' ? 0 : parseInt(rawValue, 10) // 앞의 0들은 parseInt가 자동으로 무시함
+    setTotalBudget(numericValue)
+  }
+
+  const handleAddBudget = (amount: number) => {
+    setTotalBudget(totalBudget + amount)
+  }
+
+
   // 여행 수정 관련
 
   useEffect(() => {
@@ -122,66 +135,66 @@ export default function MainPage() {
           return
         }
       }
-      
+
       // 신규 여행 시작 시 남아있는 데이터 초기화
       setName('')
-        setStartDate('')
-        setEndDate('')
-        setTotalBudget(0)
-        setOriginalId(null)
-        clearBag()
-        dispatch(clearVisits())
-        return
+      setStartDate('')
+      setEndDate('')
+      setTotalBudget(0)
+      setOriginalId(null)
+      clearBag()
+      dispatch(clearVisits())
+      return
     }
 
 
     const fetchTravelForEdit = async () => {
-        try {
-            const response = await api.get(`/travels/${travelId}`)
-            const travel = response.data
-            console.log('불러온 travel.bags:', travel.bags) // 추가
+      try {
+        const response = await api.get(`/travels/${travelId}`)
+        const travel = response.data
+        console.log('불러온 travel.bags:', travel.bags) // 추가
 
-            setName(travel.name)
-            setStartDate(travel.startDate ?? '')
-            setEndDate(travel.endDate ?? '')
-            setTotalBudget(travel.totalBudget)
+        setName(travel.name)
+        setStartDate(travel.startDate ?? '')
+        setEndDate(travel.endDate ?? '')
+        setTotalBudget(travel.totalBudget)
 
-            // 여행가방 채우기
-            clearBag()
-            const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
-                id: bag.placeId,
-                apiId: '',
-                name: bag.placeName,
-                category: '',
-                address: bag.address,
-                price: null,
-                latitude: bag.latitude,
-                longitude: bag.longitude,
-                imgUrl: '',
-                tel: '',
-                overview: '',
-            }))
-            bagPlaces.forEach((place) => addBagItem(place))
+        // 여행가방 채우기
+        clearBag()
+        const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
+          id: bag.placeId,
+          apiId: '',
+          name: bag.placeName,
+          category: '',
+          address: bag.address,
+          price: null,
+          latitude: bag.latitude,
+          longitude: bag.longitude,
+          imgUrl: '',
+          tel: '',
+          overview: '',
+        }))
+        bagPlaces.forEach((place) => addBagItem(place))
 
-            // 일정 채우기
-            dispatch(clearVisits())
-            travel.visits.forEach((visit: any) => {
-                dispatch(addVisit({
-                    placeId: visit.placeId,
-                    day: visit.day,
-                    cost: visit.cost,
-                    visitOrder: visit.visitOrder,
-                    startTime: visit.startTime.slice(0, 5),
-                    endTime: visit.endTime.slice(0, 5),
-                }))
-            })
-        } catch (error) {
-            console.error('여행 정보 조회 실패', error)
-        }
+        // 일정 채우기
+        dispatch(clearVisits())
+        travel.visits.forEach((visit: any) => {
+          dispatch(addVisit({
+            placeId: visit.placeId,
+            day: visit.day,
+            cost: visit.cost,
+            visitOrder: visit.visitOrder,
+            startTime: visit.startTime.slice(0, 5),
+            endTime: visit.endTime.slice(0, 5),
+          }))
+        })
+      } catch (error) {
+        console.error('여행 정보 조회 실패', error)
+      }
     }
 
     fetchTravelForEdit()
-}, [isNewTravel, travelId])
+  }, [isNewTravel, travelId])
 
 
 
@@ -226,12 +239,23 @@ export default function MainPage() {
                     onChange={(e) => setEndDate(e.target.value)}
                     className="border border-pebble px-2 py-1"
                   />
-                  <input
-                    type="number"
-                    value={totalBudget}
-                    onChange={(e) => setTotalBudget(Number(e.target.value))}
-                    className="border border-pebble px-2 py-1"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric" // 모바일에서 숫자 키패드가 뜨도록
+                      value={totalBudget.toLocaleString()}
+                      onChange={handleBudgetInput}
+                      className="border border-pebble px-2 py-1 w-32 text-right"
+                    />
+                    <span className="text-sm text-cool-ash">원</span>
+                  </div>
+
+                  <div className="flex gap-1 mt-2">
+                    <button onClick={() => handleAddBudget(50000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+5만</button>
+                    <button onClick={() => handleAddBudget(100000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+10만</button>
+                    <button onClick={() => handleAddBudget(500000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+50만</button>
+                    <button onClick={() => handleAddBudget(1000000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+100만</button>
+                  </div>
                   <button onClick={() => setIsEditingTravelInfo(false)}>완료</button>
                 </>
               ) : (
