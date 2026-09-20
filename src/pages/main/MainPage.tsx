@@ -29,13 +29,8 @@ export default function MainPage() {
   const { travelId } = useParams()
   const isNewTravel = travelId === 'new' // travel id 가 new 이면 newTravel 확인
 
-  // const [name, setName] = useState('')
-  // const [startDate, setStartDate] = useState('')
-  // const [endDate, setEndDate] = useState('')
-  // const [totalBudget, setTotalBudget] = useState(0)
-
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
-  const { name, startDate, endDate, totalBudget, originalId, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId } = useTravelDraftStore()
+  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId } = useTravelDraftStore()
   console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
@@ -242,7 +237,7 @@ export default function MainPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      inputMode="numeric" // 모바일에서 숫자 키패드가 뜨도록
+                      inputMode="numeric" // 모바일 숫자 키패드 뜨게끔
                       value={totalBudget.toLocaleString()}
                       onChange={handleBudgetInput}
                       className="border border-pebble px-2 py-1 w-32 text-right"
