@@ -5,6 +5,7 @@ import type { RootState } from '../../../app/store'
 import { api } from '../../../shared/api/axiosInstance'
 import { useMyTravels } from '../../../entities/travel/model/useMyTravels'
 import { TRAVEL_STATUS } from '../../../entities/travel/model/travelStatus'
+import TravelCardBase from '../../../shared/ui/TravelCardBase'
 
 export default function MyPage() {
   const navigate = useNavigate()
@@ -12,6 +13,7 @@ export default function MyPage() {
   const name = useSelector((state: RootState) => state.auth.name)
   const profileImage = useSelector((state: RootState) => state.auth.profileImage)
   const myTravels = useMyTravels()
+
   const createdTravels = myTravels.filter((t) => t.originalId === null)
   const likedTravels = myTravels.filter((t) => t.originalId !== null && !t.edited)
   const remixedTravels = myTravels.filter((t) => t.originalId !== null && t.edited)
@@ -98,38 +100,24 @@ export default function MyPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {createdTravels.map((travel) => (
-            <div key={travel.id} className="border border-pebble rounded-flat overflow-hidden">
-              <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash">
-                대표 사진
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-deep-ink">{travel.name}</h3>
-                  {travel.status === TRAVEL_STATUS.DRAFT && (
-                    <span className="text-xs text-cool-ash border border-pebble rounded-pill px-2 py-0.5">
-                      임시저장
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-cool-ash mb-3">
-                  {travel.startDate} ~ {travel.endDate} · {travel.totalBudget.toLocaleString()}원
-                </p>
+            <TravelCardBase
+              key={travel.id}
+              name={travel.name}
+              startDate={travel.startDate}
+              endDate={travel.endDate}
+              totalBudget={travel.totalBudget}
+              statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
+              footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button
-                    onClick={() => handleEdit(travel.id)}
-                    className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold"
-                  >
+                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
                     수정
                   </button>
-                  <button
-                    onClick={() => handleDelete(travel.id)}
-                    className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold"
-                  >
+                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
                     삭제
                   </button>
                 </div>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       </div>
@@ -148,32 +136,24 @@ export default function MyPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {likedTravels.map((travel) => (
-            <div key={travel.id} className="border border-pebble rounded-flat overflow-hidden">
-              <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash">
-                대표 사진
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-deep-ink">{travel.name}</h3>
-                  {travel.status === TRAVEL_STATUS.DRAFT && (
-                    <span className="text-xs text-cool-ash border border-pebble rounded-pill px-2 py-0.5">
-                      임시저장
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-cool-ash mb-3">
-                  {travel.startDate} ~ {travel.endDate} · {travel.totalBudget.toLocaleString()}원
-                </p>
+            <TravelCardBase
+              key={travel.id}
+              name={travel.name}
+              startDate={travel.startDate}
+              endDate={travel.endDate}
+              totalBudget={travel.totalBudget}
+              statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
+              footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button
-                    onClick={() => handleDelete(travel.id)}
-                    className="w-full rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold"
-                  >
-                    찜에서 삭제하기
+                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
+                    수정
+                  </button>
+                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
+                    삭제
                   </button>
                 </div>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       </div>
@@ -192,38 +172,24 @@ export default function MyPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {remixedTravels.map((travel) => (
-            <div key={travel.id} className="border border-pebble rounded-flat overflow-hidden">
-              <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash">
-                대표 사진
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-deep-ink">{travel.name}</h3>
-                  {travel.status === TRAVEL_STATUS.DRAFT && (
-                    <span className="text-xs text-cool-ash border border-pebble rounded-pill px-2 py-0.5">
-                      임시저장
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-cool-ash mb-3">
-                  {travel.startDate} ~ {travel.endDate} · {travel.totalBudget.toLocaleString()}원
-                </p>
+            <TravelCardBase
+              key={travel.id}
+              name={travel.name}
+              startDate={travel.startDate}
+              endDate={travel.endDate}
+              totalBudget={travel.totalBudget}
+              statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
+              footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button
-                    onClick={() => handleEdit(travel.id)}
-                    className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold"
-                  >
+                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
                     수정
                   </button>
-                  <button
-                    onClick={() => handleDelete(travel.id)}
-                    className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold"
-                  >
+                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
                     삭제
                   </button>
                 </div>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       </div>
