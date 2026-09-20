@@ -35,8 +35,8 @@ const authSlice = createSlice({
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('isLoggedIn')
-        }, 
-        
+        },
+
         // action.payload 안에 내용물이 담겨있음
         login: (state, action) => {
             const profileImageToStore = action.payload.profileImage ? action.payload.profileImage : ''
@@ -57,10 +57,18 @@ const authSlice = createSlice({
             state.refreshToken = action.payload.refreshToken
             localStorage.setItem('accessToken', action.payload.accessToken)
             localStorage.setItem('refreshToken', action.payload.refreshToken)
-        }
+        },
+
+        updateProfile: (state, action) => {
+            const profileImageToStore = action.payload.profileImage ? action.payload.profileImage : ''
+            state.name = action.payload.name
+            state.profileImage = profileImageToStore
+            localStorage.setItem('name', action.payload.name)
+            localStorage.setItem('profileImage', profileImageToStore)
+        },
     }
 })
 
 // 만든 2개의 액션 export 하기
-export const { login, logout, refreshTokens } = authSlice.actions
+export const { login, logout, refreshTokens, updateProfile } = authSlice.actions
 export default authSlice.reducer
