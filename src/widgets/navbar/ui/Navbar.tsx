@@ -22,6 +22,7 @@ export default function Navbar() {
     const location = useLocation() // 현재 주소를 읽어오는 훅 (react-router-dom 이 제공함)
     const isHome = location.pathname === '/'
     const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+    const profileImage = useSelector((state: RootState) => state.auth.profileImage)
     const [scrolled, setScrolled] = useState(false)
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -73,8 +74,8 @@ export default function Navbar() {
                 <div className="flex items-center gap-5 shrink-0">
                     {isLoggedIn ? (
                         <button
-                        type="button"
-                        onClick={() => dispatch(logout())}>로그아웃</button>
+                            type="button"
+                            onClick={() => dispatch(logout())}>로그아웃</button>
                     ) : (
                         <NavLink to="/login">로그인</NavLink>
                     )}
@@ -86,6 +87,18 @@ export default function Navbar() {
                     >
                         여행 만들기
                     </button>
+
+                    {isLoggedIn && (
+                        <button onClick={() => navigate('/mypage')} className='cursor-pointer'>
+                            <div className="w-8 h-8 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center shrink-0">
+                                {profileImage ? (
+                                    <img src={profileImage} alt="프로필" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-xs text-cool-ash">👤</span>
+                                )}
+                            </div>
+                        </button>
+                    )}
                 </div>
             </div>
         </header>
