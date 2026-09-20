@@ -105,7 +105,7 @@ export default function TimelinePage() {
         const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
 
         try {
-            const response = await api.post('/travels', payload)
+            // const response = await api.post('/travels', payload)
             navigate('/mypage')
         } catch (error) {
         }
