@@ -21,8 +21,8 @@ export default function PlaceListItem({ place, isSelected, onClick }: PlaceListI
     <div
       onClick={onClick}
       role="button"
-      className={`w-full text-left border rounded-flat p-3 flex flex-col gap-2 transition-colors ${
-        isSelected ? 'border-deep-ink bg-pebble/20' : 'border-pebble'
+      className={`w-full text-left rounded-flat p-3 flex flex-col gap-2 transition-colors ${
+        isSelected ? 'border border-deep-ink bg-pebble/20' : 'card-elevated-hover'
         }`}
     >
       <div className="flex items-center gap-3 min-w-0">

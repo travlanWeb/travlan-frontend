@@ -250,7 +250,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                             <div key={visit.id}>
                                                 <div
                                                     onClick={() => place && handleMoveToPlace(place)}
-                                                    className="border border-pebble rounded-flat p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
+                                                    className="card-elevated-hover p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
                                                 >
                                                     <p className="text-sm text-cool-ash mb-1">
                                                         {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
@@ -277,7 +277,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             </div>
 
                             {/* 지도 + 경로 요약 */}
-                            <div className="flex-1 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
+                            <div className="flex-1 card-elevated overflow-hidden shrink-0 flex flex-col">
                                 <h3 className="text-deep-ink font-bold p-4 pb-2 shrink-0">
                                     {selectedDay}일차 경로
                                 </h3>

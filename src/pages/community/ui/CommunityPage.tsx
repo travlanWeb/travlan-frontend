@@ -1,7 +1,7 @@
 // 커뮤니티 페이지 기본 뼈대
 // 9/14 - 페이지 구조(제목 + 목록) 잡아두기
 // 9/16 - api 연결, 데이터 불러오기 구현
-// 9/20 - 
+// 9/20 -
 
 import { useState, useEffect, useMemo } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
@@ -28,7 +28,7 @@ export default function CommunityPage() {
     { id: -2, name: '부산 바다 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000, updatedAt: '2026-01-01T00:00:00' },
     { id: -3, name: '경주 역사 탐방', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000, updatedAt: '2026-01-01T00:00:00' },
   ]
-  
+
   const navigate = useNavigate()
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
   const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null) // modal
@@ -73,55 +73,68 @@ export default function CommunityPage() {
   }, [isLoggedIn])
 
   return (
-    <div className="max-w-[1200px] mx-auto px-10 py-16">
-      <div className="border-b border-gray-200 pb-8 mb-8">
-        <h1 className="text-3xl font-bold mb-2">커뮤니티</h1>
-        <p className="text-gray-500 mb-6">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
+    // 최상위 배경 = 흰색(bg-pure-white)으로 되돌림. min-h-screen은 유지해서 콘텐츠가 짧아도 화면 전체를 채움.
+    <div className="min-h-screen bg-pure-white">
+      <div className="max-w-[1200px] mx-auto px-10 py-16">
+        <div className="border-b border-gray-200 pb-8 mb-8">
+          <h1 className="text-3xl font-bold mb-2">커뮤니티</h1>
+          <p className="text-gray-500 mb-6">다른 여행자들의 여행을 둘러보고 마음에 드는 여행을 저장하세요!</p>
 
-        <div className="flex flex-col gap-4 max-w-xs">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="여행 이름으로 검색"
-            className="border border-pebble px-4 py-2 text-sm w-72"
-          />
-          <RangeSlider
-            min={0}
-            max={MAX_BUDGET}
-            step={10000}
-            value={budgetRange}
-            onChange={setBudgetRange}
-            formatLabel={(v) => `${v.toLocaleString()}원`}
-          />
-        </div>
-      </div>
-
-      <div className="relative">
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${!isLoggedIn ? 'blur-sm pointer-events-none select-none' : ''}`}>
-          {searchedTravels.map((travel) => (
-            <TravelCardItem
-              key={travel.id}
-              travel={travel}
-              onClick={() => setSelectedTravelId(travel.id)}
+          {/* 검색 + 가격 필터를 하나의 바로 통합.
+              그림자 대신 헤어라인 테두리(border-pebble)로 구분하고, radius는 rounded-input(14px)로 통일
+              좁은 화면(모바일)에서는 세로로 쌓이고, md 이상에서는 가로로 나란히 배치됨 */}
+          <div className="flex flex-col md:flex-row md:items-center max-w-2xl bg-pure-white border border-pebble rounded-input px-6 py-3">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="여행 이름으로 검색"
+              className="flex-1 min-w-0 bg-transparent text-sm placeholder:text-ash-light"
             />
-          ))}
+
+            {/* 구분선 - 세로 배치일 땐 가로선, 가로 배치일 땐 세로선으로 바뀜 */}
+            <div className="border-t md:border-t-0 md:border-l border-pebble my-3 md:my-0 md:mx-6 md:h-8" />
+
+            <div className="flex-1 min-w-0">
+              <RangeSlider
+                min={0}
+                max={MAX_BUDGET}
+                step={10000}
+                value={budgetRange}
+                onChange={setBudgetRange}
+                formatLabel={(v) => `${v.toLocaleString()}원`}
+              />
+            </div>
+          </div>
         </div>
 
-        {!isLoggedIn && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button onClick={() => navigate('/login')} className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold shadow-lg">
-              로그인하고 더 보기
-            </button>
+        <div className="relative">
+          {/* 카드 그리드 - 그림자가 퍼질 여유 공간을 위해 gap-6으로 넓힘 */}
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${!isLoggedIn ? 'blur-sm pointer-events-none select-none' : ''}`}>
+            {searchedTravels.map((travel) => (
+              <TravelCardItem
+                key={travel.id}
+                travel={travel}
+                onClick={() => setSelectedTravelId(travel.id)}
+              />
+            ))}
           </div>
-        )}
-      </div>
 
-      <TravelDetailModal
-        travelId={isLoggedIn ? selectedTravelId : null}
-        onClose={() => setSelectedTravelId(null)}
-        onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)}
-      />
+          {!isLoggedIn && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button onClick={() => navigate('/login')} className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold">
+                로그인하고 더 보기
+              </button>
+            </div>
+          )}
+        </div>
+
+        <TravelDetailModal
+          travelId={isLoggedIn ? selectedTravelId : null}
+          onClose={() => setSelectedTravelId(null)}
+          onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)}
+        />
+      </div>
     </div>
   )
 }

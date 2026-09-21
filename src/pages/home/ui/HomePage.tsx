@@ -54,10 +54,10 @@ function HomePage() {
             {/* 그림자 */}
             <ellipse cx="0" cy="10" rx="26" ry="3" fill="#000d10" opacity="0.15" />
 
-            {/* 차체 - 주황색 */}
+            {/* 차체 - 주황색, 토큰 값을 그대로 참조해서 색상 바뀌면 자동 반영되게 함 */}
             <path
               d="M-24 -10 L-17 -10 L-12 -18 L12 -18 L17 -10 L24 -10 L24 4 L-24 4 Z"
-              fill="#bc7155"
+              fill="var(--color-clay-ember)"
             />
 
             {/* 창문 - 살짝 어두운 톤으로 구분 */}
@@ -109,7 +109,7 @@ function HomePage() {
       </section>
 
       {/* ===== 3. 강조 섹션 ===== */}
-      <section className="w-full bg-clay-ember px-10 py-16 text-pure-white text-center">
+      <section className="w-full bg-clay-ember px-10 py-16 text-deep-ink text-center">
         <h2 className="text-[37px] font-bold mb-4">예산 관리, 이렇게 쉬워집니다</h2>
         <p className="text-[18px]">
           여행지마다 가격을 확인하고, 여행가방 안에서 예산을 한눈에 관리하세요.

@@ -55,7 +55,7 @@ export default function MyPage() {
   return (
     <div className="max-w-[1200px] mx-auto px-10 py-16">
       {/* 프로필 카드 */}
-      <div className="border border-pebble rounded-flat p-8 flex items-center justify-between mb-12">
+      <div className="card-elevated p-8 flex items-center justify-between mb-12">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">
             {profileImage ? (

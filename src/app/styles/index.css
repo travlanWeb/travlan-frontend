@@ -33,3 +33,22 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* 카드형 컨테이너 공용 스타일 - 기존 border-pebble 테두리 대신
+   그림자(shadow-card)로 입체감을 주는 방식으로 전환 */
+.card-elevated {
+  border-radius: var(--radius-flat);
+  box-shadow: var(--shadow-card);
+}
+
+/* 클릭되는(인터랙션 가능한) 카드 전용 - hover 시 그림자가 더 진해지며
+   transition으로 부드럽게 전환됨 */
+.card-elevated-hover {
+  border-radius: var(--radius-flat);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.card-elevated-hover:hover {
+  box-shadow: 0 12px 32px rgba(0, 13, 16, 0.2);
+}

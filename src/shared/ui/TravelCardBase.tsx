@@ -1,3 +1,5 @@
+import { Image } from 'lucide-react'
+
 interface TravelCardBaseProps {
     name: string
     startDate: string
@@ -24,12 +26,19 @@ export default function TravelCardBase({
     footer,
 }: TravelCardBaseProps) {
     return (
-        <div onClick={onClick} className={`border border-pebble rounded-flat overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}>
-            <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash overflow-hidden">
+        // 그림자 대신 헤어라인 테두리(border-pebble)로 카드 층위를 표현함
+        // 클릭되는 카드(onClick 있음)만 hover 시 테두리 색이 진해지도록 hover:border-mist 추가
+        <div
+            onClick={onClick}
+            className={`overflow-hidden bg-pure-white border border-pebble rounded-flat ${onClick ? 'cursor-pointer hover:border-mist transition-colors duration-150' : ''}`}
+        >
+            {/* 카드 상단 이미지 - 세로로 약간 긴 비율(aspect-[4/5])로 꽉 채움.
+                카드 자체에 overflow-hidden이 있어서 이미지 쪽엔 별도 radius가 필요 없음 */}
+            <div className="aspect-[4/5] flex items-center justify-center bg-paper">
                 {imageUrl ? (
                     <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
                 ) : (
-                    '대표 사진'
+                    <Image className="w-8 h-8 text-ash-light opacity-40" strokeWidth={1.5} />
                 )}
             </div>
 
@@ -37,7 +46,7 @@ export default function TravelCardBase({
                 <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-deep-ink">{name}</h3>
                     {statusBadge && (
-                        <span className="text-xs text-cool-ash border border-pebble rounded-pill px-2 py-0.5">
+                        <span className="text-xs text-graphite border border-pebble rounded-badge px-2 py-0.5">
                             {statusBadge}
                         </span>
                     )}
@@ -48,7 +57,7 @@ export default function TravelCardBase({
                 </p>
 
                 {authorName && (
-                    <div className="flex items-center gap-2 pt-3 border-t border-pebble mb-3">
+                    <div className="flex items-center gap-2 pt-3 border-t border-mist mb-3">
                         <div className="w-6 h-6 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-[10px] text-cool-ash shrink-0">
                             {authorProfileImage ? (
                                 <img src={authorProfileImage} alt={authorName} className="w-full h-full object-cover" />
