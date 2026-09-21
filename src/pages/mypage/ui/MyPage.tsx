@@ -55,7 +55,7 @@ export default function MyPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-10 py-16">
-      {/* 프로필 카드 - 그림자 대신 헤어라인 테두리로 구분 (죽은 card-elevated 클래스 교체) */}
+      {/* 프로필 카드 - 그림자 없이 헤어라인 테두리로만 구분 */}
       <div className="border border-pebble rounded-flat p-8 flex items-center justify-between mb-12">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">

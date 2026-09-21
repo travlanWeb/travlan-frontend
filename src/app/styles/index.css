@@ -1,9 +1,11 @@
 @import "tailwindcss";
-@import "./tokens.css"
+@import "./tokens.css";
 
 /* @theme : Tailwind v4의 "디자인 토큰 등록소".
    여기 등록한 값은 bg-primary, text-primary, rounded-tag 같은
    유틸리티 클래스로 자동 생성됩니다. */
+
+
 @theme {
   /* ===== 색상: Primary ===== */
   /* 액션 요소(버튼, 링크, 강조 텍스트)에만 사용. 넓은 배경 금지 (지침 참고) */
@@ -11,51 +13,57 @@
 
   /* ===== 색상: 가격대 3단계 =====
      각 단계마다 배경색/글자색 한 쌍씩. 이름은 tier(단계)로 통일 */
-  --color-tier-budget-bg: #EAF3DE;    /* 저렴 - 배경 */
-  --color-tier-budget-text: #3B6D11;  /* 저렴 - 글자 */
-  --color-tier-standard-bg: #FAEEDA;  /* 일반 - 배경 */
-  --color-tier-standard-text: #854F0B;/* 일반 - 글자 */
-  --color-tier-premium-bg: #EEEDFE;   /* 프리미엄 - 배경 */
-  --color-tier-premium-text: #534AB7; /* 프리미엄 - 글자 */
+  --color-tier-budget-bg: #EAF3DE;
+  /* 저렴 - 배경 */
+  --color-tier-budget-text: #3B6D11;
+  /* 저렴 - 글자 */
+  --color-tier-standard-bg: #FAEEDA;
+  /* 일반 - 배경 */
+  --color-tier-standard-text: #854F0B;
+  /* 일반 - 글자 */
+  --color-tier-premium-bg: #EEEDFE;
+  /* 프리미엄 - 배경 */
+  --color-tier-premium-text: #534AB7;
+  /* 프리미엄 - 글자 */
 
   /* ===== Radius: 위계별 =====
      Tailwind 기본 --radius-* 변수를 재정의하는 대신
      우리 프로젝트 전용 이름으로 등록 (혼동 방지) */
-  --radius-tag: 4px;      /* 태그 */
-  --radius-btn: 8px;      /* 버튼 */
-  --radius-card: 12px;    /* 카드 */
-  --radius-modal: 20px;   /* 모달 */
+  --radius-tag: 4px;
+  /* 태그 */
+  --radius-btn: 8px;
+  /* 버튼 */
+  --radius-card: 12px;
+  /* 카드 */
+  --radius-modal: 20px;
+  /* 모달 */
   /* 칩/진행바는 'pill' 형태 -> 별도 토큰 없이 rounded-full(Tailwind 기본 제공) 사용 예정 */
 
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'SF Compact Text', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+
 }
 
 body {
   font-family: var(--font-sans);
 }
 
-/* 카드형 컨테이너 공용 스타일 - 기존 border-pebble 테두리 대신
-   그림자(shadow-card)로 입체감을 주는 방식으로 전환 */
-.card-elevated {
-  border-radius: var(--radius-flat);
-  box-shadow: var(--shadow-card);
-}
-
-/* 클릭되는(인터랙션 가능한) 카드 전용 - hover 시 그림자가 더 진해지며
-   transition으로 부드럽게 전환됨 */
-.card-elevated-hover {
-  border-radius: var(--radius-flat);
-  box-shadow: var(--shadow-card);
-  transition: box-shadow 0.2s ease;
-}
-
-.card-elevated-hover:hover {
-  box-shadow: 0 12px 32px rgba(0, 13, 16, 0.2);
+/* width는 세로 스크롤(overflow-y-auto), height는 가로 스크롤(overflow-x-auto) 스크롤바 두께를 담당함.
+   이전엔 height만 있어서 세로 스크롤 컨테이너(카드 그리드 등)에는 적용이 안 되고 있었음 */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  /* 파이어폭스용 - webkit 계열은 아래 ::-webkit-scrollbar*로 처리 */
+  scrollbar-color: var(--color-mist) transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
   height: 6px;
 }
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: var(--color-mist);
   border-radius: 10px;

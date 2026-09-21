@@ -207,15 +207,23 @@ export default function MainPage() {
     })
     : filteredPlaces
 
+  const [isBagOpen, setIsBagOpen] = useState(false)
+
+  // "상세보기" 버튼 전용 모달 상태 - selectedPlace(지도 포커스/카드 선택)와 분리
+  const [detailPlace, setDetailPlace] = useState<Place | null>(null)
+
+  // 카드에 마우스 올렸을 때 지도 마커를 강조하기 위한 상태
+  const [hoveredPlaceId, setHoveredPlaceId] = useState<number | null>(null)
+
 
 
   return (
     <div className="min-h-screen bg-pure-white">
-      <div className="max-w-[1200px] mx-auto px-10">
+      <div className="max-w-[1600px] mx-auto px-10">
 
         <div className="border-b border-pebble py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 flex-wrap">
 
               {isEditingTravelInfo ? (
                 <>
@@ -223,32 +231,32 @@ export default function MainPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border border-pebble px-2 py-1 text-xl font-bold outline-none focus:border-deep-ink focus:ring-0"
+                    className="border border-pebble rounded-input px-2 py-1 text-xl font-bold outline-none focus:border-deep-ink focus:ring-0 w-40"
                   />
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-pebble px-2 py-1 outline-none focus:border-deep-ink focus:ring-0"
+                    className="border border-pebble rounded-input px-2 py-1 outline-none focus:border-deep-ink focus:ring-0 w-36"
                   />
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-pebble px-2 py-1 outline-none focus:border-deep-ink focus:ring-0"
+                    className="border border-pebble rounded-input px-2 py-1 outline-none focus:border-deep-ink focus:ring-0 w-36"
                   />
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      inputMode="numeric" // 모바일 숫자 키패드 뜨게끔
+                      inputMode="numeric"
                       value={totalBudget.toLocaleString()}
                       onChange={handleBudgetInput}
-                      className="border border-pebble px-2 py-1 w-32 text-right outline-none focus:border-deep-ink focus:ring-0"
+                      className="border border-pebble rounded-input px-2 py-1 w-32 text-right outline-none focus:border-deep-ink focus:ring-0"
                     />
                     <span className="text-sm text-cool-ash">원</span>
                   </div>
 
-                  <div className="flex gap-1 mt-2">
+                  <div className="flex gap-1">
                     <button onClick={() => handleAddBudget(50000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+5만</button>
                     <button onClick={() => handleAddBudget(100000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+10만</button>
                     <button onClick={() => handleAddBudget(500000)} className="text-xs border border-pebble rounded-pill px-2 py-1">+50만</button>
@@ -271,97 +279,131 @@ export default function MainPage() {
             </div>
             <TravelNavTabs disableTimeline={!canProceedToTimeline} />
           </div>
+
+          {/* 검색창 + 가격 슬라이더 + 카테고리 필터를 하나의 카드로 묶음 */}
+          <div className="bg-pure-white border border-pebble rounded-flat p-4 mt-6 mb-4 flex items-center gap-6">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="장소 이름으로 검색"
+              className="border border-pebble rounded-input px-4 py-2 text-sm w-56 outline-none focus:border-deep-ink focus:ring-0 shrink-0"
+            />
+
+            <div className="w-64 shrink-0">
+              <RangeSlider
+                min={0}
+                max={MAX_PLACE_PRICE}
+                step={5000}
+                value={priceRange}
+                onChange={setPriceRange}
+                formatLabel={(v) => `${v.toLocaleString()}원`}
+              />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              {CATEGORY_FILTERS.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-1.5 text-sm rounded-pill border ${selectedCategory === category
+                    ? 'bg-deep-ink text-pure-white border-deep-ink'
+                    : 'border-pebble text-cool-ash'
+                    }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* 장소 이름으로 검색하기 */}
-        <div className="flex items-center gap-4 mt-6 mb-4">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="장소 이름으로 검색"
-            className="border border-pebble px-4 py-2 text-sm w-64 outline-none focus:border-deep-ink focus:ring-0"
-          />
-        </div>
-
-        <div className="max-w-xs mb-4">
-          <RangeSlider
-            min={0}
-            max={MAX_PLACE_PRICE}
-            step={5000}
-            value={priceRange}
-            onChange={setPriceRange}
-            formatLabel={(v) => `${v.toLocaleString()}원`}
-          />
-        </div>
-
-        {/* 카테고리 필터 영역 */}
-        <div className="flex gap-2 mt-6 mb-4">
-          {CATEGORY_FILTERS.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-1.5 text-sm rounded-pill border ${selectedCategory === category
-                ? 'bg-deep-ink text-pure-white border-deep-ink'
-                : 'border-pebble text-cool-ash'
-                }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-
-        <div className="flex gap-6 pb-8 h-[600px]">
-          {/* 1단: 지도 - 폭을 더 넓게 */}
-          <div className="flex-1 border border-pebble h-full">
-            <KakaoMap places={filteredPlaces} onMarkerClick={setSelectedPlace} onBoundsChange={setMapBounds} moveToPlace={selectedPlace} selectedPlaceId={selectedPlace?.id ?? null} />
+        {/* 에어비앤비 스타일 - 지도(왼쪽, 고정폭) + 카드 그리드(오른쪽, 넓게) */}
+        <div className="flex gap-6 pb-8 h-[750px]">
+          {/* 1단: 지도 - 카드 그리드보다 넓은 비율(약 55%) */}
+          <div className="flex-[1.2] bg-pure-white rounded-flat overflow-hidden h-full">
+            <KakaoMap
+              places={filteredPlaces}
+              onMarkerClick={setSelectedPlace}
+              onBoundsChange={setMapBounds}
+              moveToPlace={selectedPlace}
+              selectedPlaceId={selectedPlace?.id ?? null}
+              hoveredPlaceId={hoveredPlaceId}
+            />
           </div>
 
-          {/* 2단: 목록 */}
-          <div className="w-64 border border-pebble p-4 h-full overflow-y-auto">
+          {/* 2단: 카드 그리드 - 남는 폭 전부 사용 */}
+          <div className="flex-1 bg-pure-white rounded-flat p-4 h-full overflow-y-auto scrollbar-thin">
             <h2 className="text-deep-ink font-bold mb-3">
               여행지 목록 <span className="text-cool-ash font-normal">{visiblePlaces.length}곳</span>
             </h2>
-
-            {visiblePlaces.map((place) => ( // 배열 각 항목을 하나씩 다른 걸로 변환 -> mockPlaces 의 장소 배열 각각을 <PlaceListItem> 으로 변경
-              <PlaceListItem
-                key={place.id}
-                place={place}
-                isSelected={selectedPlace?.id === place.id} // 옵셔널 체이닝 - null 일 떄 에러 방지하기 위해서 있으면 id 그냥 읽고, 없으면 undefined 반환해라
-                onClick={() => setSelectedPlace(place)} // 클릭 발생 시 코드 실행 예약
-              />
-            ))}
-
-          </div>
-
-
-          {/* 3단: 상세정보 + 여행가방을 세로로 묶은 하나의 컬럼 */}
-          <div className="w-72 flex flex-col gap-6 h-full">
-            {selectedPlace && (
-              <div className="border border-pebble p-4 flex-1 overflow-y-auto">
-                <PlaceDetail place={selectedPlace} onClose={() => setSelectedPlace(null)} />
-              </div>
-            )}
-
-            {/* 여행가방 - 스크롤 되는 부분만 분리 */}
-            <div
-              className={`border border-pebble p-4 overflow-y-auto ${selectedPlace ? 'max-h-[200px]' : 'flex-1'}`}
-            >
-              <BagPanel />
+            <div className="grid grid-cols-2 gap-6">
+              {visiblePlaces.map((place) => (
+                <PlaceListItem
+                  key={place.id}
+                  place={place}
+                  isSelected={selectedPlace?.id === place.id}
+                  onClick={() => setSelectedPlace(place)}
+                  onDetailClick={() => setDetailPlace(place)}
+                  onHover={() => setHoveredPlaceId(place.id)}
+                  onHoverEnd={() => setHoveredPlaceId(null)}
+                />
+              ))}
             </div>
-
-            {/* 버튼은 스크롤 밖, 항상 보이는 자리로 */}
-            <button
-              onClick={handleSendToTimeline}
-              disabled={bagItems.length === 0 || !canProceedToTimeline}
-              className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 shrink-0"
-            >
-              타임라인으로 보내기
-            </button>
           </div>
         </div>
       </div>
+
+      {/* 여행가방 플로팅 탭 - 화면 오른쪽에 항상 걸쳐있음 */}
+      <button
+        onClick={() => setIsBagOpen(!isBagOpen)}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-deep-ink text-pure-white rounded-l-flat px-3 py-6 flex flex-col items-center gap-2 shadow-md"
+      >
+        <span className="text-sm font-semibold [writing-mode:vertical-rl]">여행가방</span>
+        <span className="text-xs bg-clay-ember text-deep-ink rounded-pill w-5 h-5 flex items-center justify-center">
+          {bagItems.length}
+        </span>
+      </button>
+
+      {/* 여행가방 슬라이드 패널 */}
+      <div
+        className={`fixed top-[68px] right-0 h-[calc(100%-68px)] w-96 bg-pure-white border-l border-pebble z-50 flex flex-col p-4 transition-transform duration-300 ${isBagOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-deep-ink font-bold">여행가방</h2>
+          <button onClick={() => setIsBagOpen(false)} className="text-cool-ash">✕</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          <BagPanel />
+        </div>
+
+        <button
+          onClick={handleSendToTimeline}
+          disabled={bagItems.length === 0 || !canProceedToTimeline}
+          className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-400 mt-4"
+        >
+          타임라인으로 보내기
+        </button>
+      </div>
+
+      {/* 패널 열렸을 때 배경 어둡게, 클릭하면 닫힘 */}
+      {isBagOpen && (
+        <div
+          onClick={() => setIsBagOpen(false)}
+          className="fixed inset-0 bg-black/20 z-40"
+        />
+      )}
+
+      {/* 장소 상세 모달 - "상세보기" 버튼 전용, 카드 선택(selectedPlace)과는 분리된 상태 */}
+      {detailPlace && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="bg-pure-white border border-pebble rounded-flat w-full max-w-md max-h-[85vh] p-6 overflow-hidden flex flex-col">
+            <PlaceDetail place={detailPlace} onClose={() => setDetailPlace(null)} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

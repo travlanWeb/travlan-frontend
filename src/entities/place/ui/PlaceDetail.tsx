@@ -36,36 +36,32 @@ export default function PlaceDetail({ place, onClose }: PlaceDetailProps) {
     return (
         <div className="h-full flex flex-col gap-3">
             <div className="relative">
-                {/* 이미지 */}
                 {place.imgUrl && (
                     <img
                         src={place.imgUrl}
                         alt={place.name}
-                        className="w-full h-40 object-cover rounded-flat"
+                        className="w-full h-56 object-cover rounded-flat"
                     />
                 )}
-
                 <button
                     onClick={onClose}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-pure-white flex items-center justify-center text-deep-ink shadow-sm"
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-pure-white border border-pebble flex items-center justify-center text-deep-ink"
                 >✕</button>
             </div>
 
-
-
-            <div className="p-4">
+            <div className="flex-1 overflow-y-auto">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-deep-ink">{place.name}</h3>
+                    <h3 className="text-xl font-bold text-deep-ink">{place.name}</h3>
                     {place.price && (
-                        <span className="text-sm text-cool-ash whitespace-nowrap ml-2">
+                        <span className="text-base text-cool-ash whitespace-nowrap ml-2">
                             {place.price.toLocaleString()}원
                         </span>
                     )}
                 </div>
 
                 {place.overview && (
-                    <div className="mb-3">
-                        <p className={`text-sm text-cool-ash ${isExpanded ? '' : 'line-clamp-2'}`}>
+                    <div className="mb-4">
+                        <p className={`text-sm text-cool-ash ${isExpanded ? '' : 'line-clamp-3'}`}>
                             {place.overview}
                         </p>
                         <button
@@ -76,18 +72,17 @@ export default function PlaceDetail({ place, onClose }: PlaceDetailProps) {
                         </button>
                     </div>
                 )}
-
-                <button
-                    onClick={handleToggleBag}
-                    className={`w-full rounded-pill py-2.5 text-sm font-semibold transition-colors ${isInBag
-                        ? 'bg-deep-ink text-pure-white'
-                        : 'border border-pebble text-deep-ink'
-                        }`}
-                >
-                    {isInBag ? '담김 ✓' : '여행가방에 담기'}
-                </button>
-
             </div>
+
+            <button
+                onClick={handleToggleBag}
+                className={`w-full rounded-pill py-2.5 text-sm font-semibold transition-colors shrink-0 ${isInBag
+                    ? 'bg-deep-ink text-pure-white'
+                    : 'border border-pebble text-deep-ink'
+                    }`}
+            >
+                {isInBag ? '담김 ✓' : '여행가방에 담기'}
+            </button>
         </div>
     )
 }
