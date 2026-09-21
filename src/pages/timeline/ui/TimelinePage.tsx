@@ -381,9 +381,11 @@ export default function TimelinePage() {
                                                     className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                                 >
                                                     <option value="">종료 시간</option>
-                                                    {timeOptions.map((time) => (
-                                                        <option key={time} value={time}>{time}</option>
-                                                    ))}
+                                                    {timeOptions
+                                                        .filter((time) => !visit.startTime || time > visit.startTime)
+                                                        .map((time) => (
+                                                            <option key={time} value={time}>{time}</option>
+                                                        ))}
                                                 </select>
                                             </div>
 
@@ -410,7 +412,7 @@ export default function TimelinePage() {
                             })}
                         </div>
                     </div>
-                                    {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
+                    {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
                     <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
                         <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
