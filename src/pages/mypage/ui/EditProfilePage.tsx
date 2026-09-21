@@ -6,6 +6,7 @@ import { updateProfile } from '../../../entities/auth/model/authSlice'
 import { uploadImage } from '../../../shared/api/uploadImage'
 import { getUserIdFromToken } from '../../../entities/auth/model/getUserId'
 import { api } from '../../../shared/api/axiosInstance'
+import ProfileAvatar from '../../../shared/ui/ProfileAvatar'
 
 export default function EditProfilePage() {
     const navigate = useNavigate()
@@ -86,11 +87,7 @@ export default function EditProfilePage() {
 
             <div className="flex flex-col items-center gap-4 mb-8">
                 <div className="w-24 h-24 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">
-                    {previewUrl ? (
-                        <img src={previewUrl} alt="프로필 미리보기" className="w-full h-full object-cover" />
-                    ) : (
-                        '프로필'
-                    )}
+                    <ProfileAvatar imageUrl={previewUrl} size={96} />
                 </div>
                 <label className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-sm cursor-pointer">
                     사진 변경

@@ -7,6 +7,8 @@ import { useMyTravels } from '../../../entities/travel/model/useMyTravels'
 import { TRAVEL_STATUS } from '../../../entities/travel/model/travelStatus'
 import TravelCardBase from '../../../shared/ui/TravelCardBase'
 import HorizontalCardScroller from '../../../shared/ui/HorizontalCardScroller'
+import ProfileAvatar from '../../../shared/ui/ProfileAvatar'
+
 
 export default function MyPage() {
   const navigate = useNavigate()
@@ -58,13 +60,7 @@ export default function MyPage() {
       {/* 프로필 카드 - 그림자 없이 헤어라인 테두리로만 구분 */}
       <div className="border border-pebble rounded-flat p-8 flex items-center justify-between mb-12">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">
-            {profileImage ? (
-              <img src={profileImage} alt="프로필" className="w-full h-full object-cover" />
-            ) : (
-              '프로필'
-            )}
-          </div>
+          <ProfileAvatar imageUrl={profileImage} size={80} />
           <div>
             <h1 className="text-xl font-bold text-deep-ink mb-1">{name || '여행자'}</h1>
             <p className="text-sm text-cool-ash mb-3">{bio}</p>
