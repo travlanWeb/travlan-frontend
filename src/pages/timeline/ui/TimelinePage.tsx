@@ -410,90 +410,89 @@ export default function TimelinePage() {
                             })}
                         </div>
                     </div>
-                </div>
+                                    {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
+                    <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
+                        <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
-                {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
-                <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
-                    <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
-
-                    <div className="h-64 shrink-0">
-                        {kakaoLoading ? (
-                            <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
-                                지도를 불러오는 중...
-                            </div>
-                        ) : kakaoError ? (
-                            <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
-                                지도를 불러오지 못했습니다.
-                            </div>
-                        ) : (
-                            <Map center={mapCenter}
-                                style={{ width: '100%', height: '100%' }}
-                                level={9}
-                                onCreate={(map) => {
-                                    mapRef.current = map
-                                    if (timelinePlaces.length > 0) {
-                                        const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
-                                        map.panTo(position)
-                                    }
-                                }}>
-                                {timelinePlaces.map((place, index) => (
-                                    <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
-                                        <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
-                                            {index + 1}
-                                        </div>
-                                    </CustomOverlayMap>
-                                ))}
-
-                                {timelinePlaces.length > 1 && (
-                                    <Polyline
-                                        path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
-                                        strokeWeight={3}
-                                        strokeColor="#000d10"
-                                        strokeOpacity={0.7}
-                                        strokeStyle="shortdash"
-                                    />
-                                )}
-                            </Map>
-                        )}
-                    </div>
-
-                    <div className="p-4 overflow-y-auto flex-1">
-                        {visitsForSelectedDay.map((visit, index) => {
-                            const place = bagItems.find((item) => item.id === visit.placeId)
-                            if (!place) return null
-                            return (
-                                <div
-                                    key={visit.placeId}
-                                    onClick={() => handleMoveToPlace(place)}
-                                    className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-                                            {index + 1}
-                                        </div>
-                                        <span className="text-sm text-deep-ink">{place.name}</span>
-                                    </div>
-                                    <span className="text-xs text-cool-ash">{visit.startTime || '--:--'}</span>
+                        <div className="h-64 shrink-0">
+                            {kakaoLoading ? (
+                                <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                    지도를 불러오는 중...
                                 </div>
-                            )
-                        })}
+                            ) : kakaoError ? (
+                                <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                    지도를 불러오지 못했습니다.
+                                </div>
+                            ) : (
+                                <Map center={mapCenter}
+                                    style={{ width: '100%', height: '100%' }}
+                                    level={9}
+                                    onCreate={(map) => {
+                                        mapRef.current = map
+                                        if (timelinePlaces.length > 0) {
+                                            const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
+                                            map.panTo(position)
+                                        }
+                                    }}>
+                                    {timelinePlaces.map((place, index) => (
+                                        <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
+                                            <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
+                                                {index + 1}
+                                            </div>
+                                        </CustomOverlayMap>
+                                    ))}
+
+                                    {timelinePlaces.length > 1 && (
+                                        <Polyline
+                                            path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
+                                            strokeWeight={3}
+                                            strokeColor="#000d10"
+                                            strokeOpacity={0.7}
+                                            strokeStyle="shortdash"
+                                        />
+                                    )}
+                                </Map>
+                            )}
+                        </div>
+
+                        <div className="p-4 overflow-y-auto flex-1">
+                            {visitsForSelectedDay.map((visit, index) => {
+                                const place = bagItems.find((item) => item.id === visit.placeId)
+                                if (!place) return null
+                                return (
+                                    <div
+                                        key={visit.placeId}
+                                        onClick={() => handleMoveToPlace(place)}
+                                        className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+                                                {index + 1}
+                                            </div>
+                                            <span className="text-sm text-deep-ink">{place.name}</span>
+                                        </div>
+                                        <span className="text-xs text-cool-ash">{visit.startTime || '--:--'}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="flex gap-3 mt-6">
-                <button
-                    onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
-                    className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                >
-                    임시저장
-                </button>
-                <button
-                    onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
-                    className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                >
-                    여행 저장하기
-                </button>
+                <div className="flex gap-3 mt-6">
+                    <button
+                        onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
+                        className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                    >
+                        임시저장
+                    </button>
+                    <button
+                        onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
+                        className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                    >
+                        여행 저장하기
+                    </button>
+                </div>
             </div>
         </div>
     )
