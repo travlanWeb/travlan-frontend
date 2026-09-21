@@ -1,4 +1,5 @@
 import { Image } from 'lucide-react'
+import ProfileAvatar from './ProfileAvatar'
 
 interface TravelCardBaseProps {
     name: string
@@ -57,14 +58,8 @@ export default function TravelCardBase({
                 </p>
 
                 {authorName && (
-                    <div className="flex items-center gap-2 pt-3 border-t border-mist mb-3">
-                        <div className="w-6 h-6 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-[10px] text-cool-ash shrink-0">
-                            {authorProfileImage ? (
-                                <img src={authorProfileImage} alt={authorName} className="w-full h-full object-cover" />
-                            ) : (
-                                '👤'
-                            )}
-                        </div>
+                    <div className="flex items-center gap-2 pt-3 border-t border-pebble">
+                        <ProfileAvatar imageUrl={authorProfileImage} size={24} />
                         <span className="text-xs text-cool-ash">{authorName}</span>
                     </div>
                 )}

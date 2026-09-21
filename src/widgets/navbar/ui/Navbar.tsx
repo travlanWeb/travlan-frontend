@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import { logout } from '../../../entities/auth/model/authSlice';
 import type { RootState } from '../../../app/store'
 import { api } from '../../../shared/api/axiosInstance';
+import ProfileAvatar from '../../../shared/ui/ProfileAvatar';
 
 
 const navItems = [
@@ -105,13 +106,7 @@ export default function Navbar() {
 
                     {isLoggedIn && (
                         <button onClick={() => navigate('/mypage')} className='cursor-pointer'>
-                            <div className="w-8 h-8 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center shrink-0">
-                                {profileImage ? (
-                                    <img src={profileImage} alt="프로필" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-xs text-cool-ash">👤</span>
-                                )}
-                            </div>
+                            <ProfileAvatar imageUrl={profileImage} size={32} />
                         </button>
                     )}
                 </div>
