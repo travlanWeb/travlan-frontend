@@ -96,6 +96,7 @@ export default function MyPage() {
         {createdTravels.map((travel) => (
           <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
             <TravelCardBase
+              imageUrl={travel.travelImage}
               name={travel.name}
               startDate={travel.startDate}
               endDate={travel.endDate}
@@ -120,6 +121,7 @@ export default function MyPage() {
         {remixedTravels.map((travel) => (
           <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
             <TravelCardBase
+              imageUrl={travel.travelImage}
               name={travel.name}
               startDate={travel.startDate}
               endDate={travel.endDate}
@@ -144,6 +146,7 @@ export default function MyPage() {
         {likedTravels.map((travel) => (
           <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
             <TravelCardBase
+              imageUrl={travel.travelImage}
               name={travel.name}
               startDate={travel.startDate}
               endDate={travel.endDate}
