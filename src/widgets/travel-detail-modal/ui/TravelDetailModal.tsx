@@ -40,6 +40,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const setEndDate = useTravelDraftStore((state) => state.setEndDate)
     const setTotalBudget = useTravelDraftStore((state) => state.setTotalBudget)
     const setOriginalId = useTravelDraftStore((state) => state.setOriginalId)
+    const setJustCopied = useTravelDraftStore((state) => state.setJustCopied)
     const clearBag = useBagStore((state) => state.clearBag)
     const addBagItem = useBagStore((state) => state.addItem)
 
@@ -162,6 +163,10 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                 endTime: visit.endTime.slice(0, 5),
             }))
         })
+        
+        // 방금 복사해서 채워 넣은 직후라는 표시 - MainPage가 이 데이터를
+        // "쓰다 만 임시 데이터"로 착각해서 지우지 않도록 함
+        setJustCopied(true)
 
         onClose()
         navigate('/travels/new/map')
