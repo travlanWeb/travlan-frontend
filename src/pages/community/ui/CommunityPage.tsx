@@ -12,6 +12,8 @@ import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
 import TravelCardItem from "./TravelCardItem"
 import RangeSlider from "../../../shared/ui/RangeSlider"
+import { usePriceTierStore } from '../../../entities/user/model/usePriceTierStore'
+import { getPriceTier } from '../../../entities/user/model/getPriceTier'
 
 // 슬라이더용 max budget 선언
 const MAX_BUDGET = 10000000
@@ -35,11 +37,22 @@ export default function CommunityPage() {
   const [travels, setTravels] = useState<TravelCard[]>([]) // 받아온 데이터 담기
   const [searchQuery, setSearchQuery] = useState('') // 검색 기능 추가
 
+  // 가격 티어
+  const cheapMax = usePriceTierStore((state) => state.cheapMax)
+  const premiumMin = usePriceTierStore((state) => state.premiumMin)
+  const [selectedTier, setSelectedTier] = useState<'전체' | '저렴' | '일반' | '프리미엄'>('전체')
+
 
   const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
 
   const searchedTravels = useMemo(() => {
     let result = displayedTravels
+
+    if (selectedTier !== '전체') {
+      result = result.filter((travel) =>
+        getPriceTier(travel.totalBudget, cheapMax, premiumMin) === selectedTier
+      )
+    }
 
     if (searchQuery.trim()) {
       result = result.filter((travel) =>
@@ -71,6 +84,7 @@ export default function CommunityPage() {
     }
     fetchTravels()
   }, [isLoggedIn])
+
 
   return (
     // 최상위 배경 = 흰색(bg-pure-white)으로 되돌림. min-h-screen은 유지해서 콘텐츠가 짧아도 화면 전체를 채움.
@@ -106,6 +120,21 @@ export default function CommunityPage() {
                 onChange={setBudgetRange}
                 formatLabel={(v) => `${v.toLocaleString()}원`}
               />
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              {(['전체', '저렴', '일반', '프리미엄'] as const).map((tier) => (
+                <button
+                  key={tier}
+                  onClick={() => setSelectedTier(tier)}
+                  className={`px-4 py-1.5 text-sm rounded-pill border cursor-pointer ${selectedTier === tier
+                      ? 'bg-deep-ink text-pure-white border-deep-ink'
+                      : 'border-pebble text-cool-ash'
+                    }`}
+                >
+                  {tier}
+                </button>
+              ))}
             </div>
           </div>
         </div>

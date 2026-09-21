@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
@@ -19,6 +19,28 @@ export default function EditProfilePage() {
     const [previewUrl, setPreviewUrl] = useState(currentProfileImage || '')
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState('')
+
+    // 개인별 커스텀 가격 티어
+    const [cheapThreshold, setCheapThreshold] = useState(30)
+    const [normalThreshold, setNormalThreshold] = useState(60)
+    const [premiumThreshold, setPremiumThreshold] = useState(100)
+
+    useEffect(() => {
+        if (!accessToken) return
+        const userId = getUserIdFromToken(accessToken)
+
+        const fetchThresholds = async () => {
+            try {
+                const response = await api.get(`/users/${userId}`)
+                setCheapThreshold(response.data.cheapThreshold)
+                setNormalThreshold(response.data.normalThreshold)
+                setPremiumThreshold(response.data.premiumThreshold)
+            } catch (error) {
+                console.error('가격 기준 조회 실패', error)
+            }
+        }
+        fetchThresholds()
+    }, [accessToken])
 
     // 파일 선택 시 미리보기 이미지 갱신
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +65,9 @@ export default function EditProfilePage() {
             const response = await api.put(`/users/${userId}`, {
                 name,
                 profileImage: newProfileImage,
+                cheapThreshold,
+                normalThreshold,
+                premiumThreshold,
             })
 
             dispatch(updateProfile(response.data))
@@ -81,6 +106,39 @@ export default function EditProfilePage() {
                     onChange={(e) => setName(e.target.value)}
                     className="w-full border border-pebble px-4 py-3 text-deep-ink outline-none focus:border-deep-ink focus:ring-0"
                 />
+            </div>
+            <div className="mb-6">
+                <label className="block text-sm text-cool-ash mb-2">가격 기준 설정 (단위: 만원)</label>
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-deep-ink w-20 shrink-0">저렴 기준</span>
+                    <input
+                        type="number"
+                        value={cheapThreshold}
+                        onChange={(e) => setCheapThreshold(Number(e.target.value))}
+                        className="border border-pebble rounded-input px-3 py-2 text-sm flex-1 outline-none focus:border-deep-ink focus:ring-0"
+                    />
+                    <span className="text-sm text-cool-ash shrink-0">만원 이하</span>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-deep-ink w-20 shrink-0">일반 기준</span>
+                    <input
+                        type="number"
+                        value={normalThreshold}
+                        onChange={(e) => setNormalThreshold(Number(e.target.value))}
+                        className="border border-pebble rounded-input px-3 py-2 text-sm flex-1 outline-none focus:border-deep-ink focus:ring-0"
+                    />
+                    <span className="text-sm text-cool-ash shrink-0">만원 이하</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-deep-ink w-20 shrink-0">프리미엄 기준</span>
+                    <input
+                        type="number"
+                        value={premiumThreshold}
+                        onChange={(e) => setPremiumThreshold(Number(e.target.value))}
+                        className="border border-pebble rounded-input px-3 py-2 text-sm flex-1 outline-none focus:border-deep-ink focus:ring-0"
+                    />
+                    <span className="text-sm text-cool-ash shrink-0">만원 이상</span>
+                </div>
             </div>
 
             {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
