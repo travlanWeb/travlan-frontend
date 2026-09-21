@@ -15,16 +15,20 @@ import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftS
 import { usePlaces } from '../../entities/place/model/usePlaces'
 import { CATEGORY_FILTERS } from '../../entities/place/model/categoryMap'
 import TravelNavTabs from '../../widgets/travel-nav-tabs/TravelNavTabs'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState } from '../../app/store'
 import { api } from '../../shared/api/axiosInstance'
 import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 import DateRangePicker from '../../shared/ui/DateRangePicker'
+import editIcon from '../../assets/edit.svg'
+import { Pencil } from 'lucide-react'
 
 
 export default function MainPage() {
 
   const places = usePlaces()
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
 
   // 생성 + 입력 게이트 추가
   const { travelId } = useParams()
@@ -223,7 +227,22 @@ export default function MainPage() {
   // 카드에 마우스 올렸을 때 지도 마커를 강조하기 위한 상태
   const [hoveredPlaceId, setHoveredPlaceId] = useState<number | null>(null)
 
-
+  // 비로그인 상태로 여행 만들기에 진입한 경우, 지도/장소 데이터를 그릴 필요 없이
+  // 바로 로그인 유도 화면으로 대체 (MyPage와 동일한 패턴)
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-[1200px] mx-auto px-10 py-32 text-center">
+        <p className="text-lg text-deep-ink font-semibold mb-4">로그인이 필요합니다</p>
+        <p className="text-sm text-cool-ash mb-6">여행을 만들려면 먼저 로그인해주세요.</p>
+        <button
+          onClick={() => navigate('/login')}
+          className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
+        >
+          로그인하러 가기
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-pure-white">
@@ -278,7 +297,13 @@ export default function MainPage() {
                   <span className="text-sm text-cool-ash">
                     예산 {totalBudget.toLocaleString()}원
                   </span>
-                  <button onClick={() => setIsEditingTravelInfo(true)}>✏️</button>
+                  <button
+                    onClick={() => setIsEditingTravelInfo(true)}
+                    aria-label="여행 정보 수정"
+                    className="text-cool-ash hover:text-deep-ink transition-colors"
+                  >
+                    <Pencil size={16} />
+                  </button>
                 </>
               )}
             </div>
