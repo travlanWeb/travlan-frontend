@@ -62,7 +62,7 @@ export default function MyPage() {
         <div className="flex items-center gap-6">
           <ProfileAvatar imageUrl={profileImage} size={80} />
           <div>
-            <h1 className="text-xl font-bold text-deep-ink mb-1">{name || '여행자'}</h1>
+            <h1 className="text-2xl font-bold text-deep-ink mb-1">{name || '여행자'}</h1>
             <p className="text-sm text-cool-ash mb-3">{bio}</p>
             <div className="flex gap-6">
               <div>
