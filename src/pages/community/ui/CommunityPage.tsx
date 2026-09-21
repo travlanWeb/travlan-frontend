@@ -1,7 +1,7 @@
 // 커뮤니티 페이지 기본 뼈대
 // 9/14 - 페이지 구조(제목 + 목록) 잡아두기
 // 9/16 - api 연결, 데이터 불러오기 구현
-// 9/20 -
+// 9/20 - 가격 티어(저렴/일반/프리미엄) 필터 추가
 
 import { useState, useEffect, useMemo } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
 import TravelCardItem from "./TravelCardItem"
 import RangeSlider from "../../../shared/ui/RangeSlider"
+import { getPriceTier } from '../../../entities/user/model/getPriceTier'
 
 const MAX_BUDGET = 10000000
 
@@ -31,12 +32,21 @@ export default function CommunityPage() {
   const [travels, setTravels] = useState<TravelCard[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
-  // TODO: 가격 티어(저렴/일반/프리미엄) 필터 - normalThreshold 역할 확정 후 재구현 예정
+  // 가격 티어 - 로그인한 사용자의 기준값 (기본값은 API 응답 오기 전 임시값)
+  const [cheapThreshold, setCheapThreshold] = useState(30)
+  const [premiumThreshold, setPremiumThreshold] = useState(100)
+  const [selectedTier, setSelectedTier] = useState<'전체' | '저렴' | '일반' | '프리미엄'>('전체')
 
   const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
 
   const searchedTravels = useMemo(() => {
     let result = displayedTravels
+
+    if (selectedTier !== '전체') {
+      result = result.filter((travel) =>
+        getPriceTier(travel.totalBudget, cheapThreshold, premiumThreshold) === selectedTier
+      )
+    }
 
     if (searchQuery.trim()) {
       result = result.filter((travel) =>
@@ -49,26 +59,23 @@ export default function CommunityPage() {
     )
 
     return result
-  }, [displayedTravels, searchQuery, budgetRange])
+  }, [displayedTravels, searchQuery, budgetRange, selectedTier, cheapThreshold, premiumThreshold])
 
-
+  // 로그인한 사용자의 가격 기준값 불러오기
   useEffect(() => {
     if (!isLoggedIn) return
 
-    const fetchTravels = async () => {
+    const fetchThresholds = async () => {
       try {
-        const response = await api.get('/travels')
-        const sortedTravels = [...response.data].sort((a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        )
-        setTravels(sortedTravels)
+        const response = await api.get('/users/me')
+        setCheapThreshold(response.data.cheapThreshold)
+        setPremiumThreshold(response.data.premiumThreshold)
       } catch (error) {
-        console.error('여행지 목록 조회 실패', error)
+        console.error('가격 기준 조회 실패', error)
       }
     }
-    fetchTravels()
+    fetchThresholds()
   }, [isLoggedIn])
-
 
   return (
     <div className="min-h-screen bg-pure-white">
@@ -98,6 +105,22 @@ export default function CommunityPage() {
                 formatLabel={(v) => `${v.toLocaleString()}원`}
               />
             </div>
+          </div>
+
+          {/* 가격 등급 필터 - 검색바 밖으로 분리, 자체 줄 */}
+          <div className="flex gap-2 mt-4">
+            {(['전체', '저렴', '일반', '프리미엄'] as const).map((tier) => (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(tier)}
+                className={`px-4 py-1.5 text-sm rounded-pill border cursor-pointer ${selectedTier === tier
+                  ? 'bg-deep-ink text-pure-white border-deep-ink'
+                  : 'border-pebble text-cool-ash'
+                  }`}
+              >
+                {tier}
+              </button>
+            ))}
           </div>
         </div>
 

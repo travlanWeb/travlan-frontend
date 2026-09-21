@@ -1,7 +1,6 @@
 export function getPriceTier(
     totalBudgetWon: number,
     cheapThreshold: number,
-    normalThreshold: number,
     premiumThreshold: number
 ): '저렴' | '일반' | '프리미엄' {
     const budgetInManwon = totalBudgetWon / 10000
