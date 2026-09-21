@@ -21,7 +21,8 @@ export default function RangeSlider({ min, max, step, value, onChange, formatLab
                 {display(low)} ~ {display(high)}
             </p>
             <div className="relative h-6 flex items-center">
-                <div className="absolute w-full h-1 bg-pebble rounded-pill" />
+                {/* 트랙 배경 - pebble(#ececee)은 흰 배경 위에서 거의 안 보여서 mist(#d4d4d8)로 변경, 손잡이는 deep-ink 유지 */}
+                <div className="absolute w-full h-1 bg-mist rounded-pill" />
                 <input
                     type="range"
                     min={min}

@@ -11,12 +11,14 @@
   --color-deep-ink: #09090b;      /* 기본 텍스트, 헤딩, 다크 버튼 배경 */
   --color-pure-white: #ffffff;    /* 페이지 배경, 카드 표면 - 이제 카드도 페이지와 같은 흰색(구분은 테두리가 담당) */
   --color-cool-ash: #71717a;      /* 보조 텍스트, 헬퍼 텍스트 */
-  --color-pebble: #ececee;        /* 카드/입력창 테두리 전용(1px 헤어라인) - 배경으로는 더 이상 안 씀 */
+  --color-pebble: #d4d4d8;        /* 카드/입력창 테두리 전용(1px 헤어라인) - 배경으로는 더 이상 안 씀. 기존 #ececee가 흰 배경 위에서 거의 안 보여서 진하게 올림(예전 mist 값을 그대로 가져옴) */
   --color-graphite: #18181b;      /* 본문 텍스트, nav 텍스트 */
   --color-midnight-hull: #27272a; /* 다크 섹션/카드 배경 */
   --color-clay-ember: #ff5a00;    /* 오직 핵심 CTA 버튼 전용 - 뱃지/텍스트 강조/카드 배경엔 사용 금지 */
+  /* CTA 버튼 텍스트는 반드시 text-deep-ink로 쓸 것 - text-pure-white는 대비 3.13:1로 WCAG 기준(4.5:1) 미달.
+     deep-ink 텍스트는 대비 6.36:1로 통과함 (clay-ember 값 자체는 안 바꾸고 텍스트 색으로 해결) */
 
-  --color-mist: #d4d4d8;      /* 보조 구분선, 비활성 상태, 카드 hover 시 테두리 색 */
+  --color-mist: #a1a1aa;      /* 보조 구분선, 비활성 상태, 카드 hover 시 테두리 색 - pebble보다 한 단계 진하게(예전 ash-light 값을 그대로 가져옴) */
   --color-ash-light: #a1a1aa; /* placeholder 텍스트, 비활성 라벨 */
   --color-paper: #f4f4f5;     /* 선택적 섹션 배경 (기본은 pure-white, 특정 섹션에만) */
 

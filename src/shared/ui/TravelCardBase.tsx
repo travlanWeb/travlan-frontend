@@ -32,13 +32,13 @@ export default function TravelCardBase({
             onClick={onClick}
             className={`overflow-hidden bg-pure-white border border-pebble rounded-flat ${onClick ? 'cursor-pointer hover:border-mist transition-colors duration-150' : ''}`}
         >
-            {/* 카드 상단 이미지 - 세로로 약간 긴 비율(aspect-[4/5])로 꽉 채움.
+            {/* 카드 상단 이미지 - 여행/풍경 사진에 어울리는 가로로 넓은 비율(16:9)로 꽉 채움.
                 카드 자체에 overflow-hidden이 있어서 이미지 쪽엔 별도 radius가 필요 없음 */}
-            <div className="aspect-[4/5] flex items-center justify-center bg-paper">
+            <div className="aspect-video flex items-center justify-center bg-paper">
                 {imageUrl ? (
                     <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
                 ) : (
-                    <Image className="w-8 h-8 text-ash-light opacity-40" strokeWidth={1.5} />
+                    <Image className="w-8 h-8 text-cool-ash opacity-70" strokeWidth={1.5} />
                 )}
             </div>
 

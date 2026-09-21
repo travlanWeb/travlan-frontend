@@ -363,7 +363,7 @@ export default function TimelinePage() {
                                                         dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
                                                     }
                                                 }}
-                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash"
+                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                             >
                                                 <option value="">시작 시간</option>
                                                 {timeOptions.map((time) => (
@@ -374,7 +374,7 @@ export default function TimelinePage() {
                                             <select
                                                 value={visit.endTime}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
-                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash"
+                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                             >
                                                 <option value="">종료 시간</option>
                                                 {timeOptions.map((time) => (
@@ -397,7 +397,7 @@ export default function TimelinePage() {
                                                 type="number"
                                                 value={visit.cost}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
-                                                className="border border-pebble px-2 py-1 text-xs w-24"
+                                                className="border border-pebble px-2 py-1 text-xs w-24 outline-none focus:border-deep-ink focus:ring-0"
                                             />
                                         </div>
                                     </div>

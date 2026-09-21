@@ -52,3 +52,11 @@ body {
 .card-elevated-hover:hover {
   box-shadow: 0 12px 32px rgba(0, 13, 16, 0.2);
 }
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-mist);
+  border-radius: 10px;
+}

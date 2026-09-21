@@ -53,21 +53,21 @@ export default function SignupPage() {
             placeholder="이름"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border border-pebble px-4 py-3 text-deep-ink"
+            className="border border-pebble px-4 py-3 text-deep-ink outline-none focus:border-deep-ink focus:ring-0"
           />
           <input
             type="email"
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border border-pebble px-4 py-3 text-deep-ink"
+            className="border border-pebble px-4 py-3 text-deep-ink outline-none focus:border-deep-ink focus:ring-0"
           />
           <input
             type="password"
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border border-pebble px-4 py-3 text-deep-ink"
+            className="border border-pebble px-4 py-3 text-deep-ink outline-none focus:border-deep-ink focus:ring-0"
           />
           <button
             type="submit"
