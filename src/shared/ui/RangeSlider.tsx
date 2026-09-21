@@ -14,6 +14,8 @@ export default function RangeSlider({ min, max, step, value, onChange, formatLab
     const display = formatLabel ?? ((v: number) => v.toLocaleString())
 
     return (
+        // 배경 없는 투명한 wrapper - 커뮤니티 페이지에서는 통합 필터 바(pill) 안에 자연스럽게 얹히고,
+        // 지도 페이지에서는 흰 배경 위에 그대로 올라가서 별도 배경이 필요 없음
         <div>
             <p className="text-sm text-cool-ash mb-2">
                 {display(low)} ~ {display(high)}

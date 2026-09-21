@@ -1,21 +1,28 @@
-/* 홈 화면부터 적용되는 "확정 디자인 방향" 토큰
+/* 홈 화면부터 적용되는 "확정 디자인 방향" 토큰 (DESIGN.md v3, 최종 확정)
    기존 index.css의 그린 계열 토큰(--color-primary 등)은
    지도 페이지가 아직 쓰고 있어서 삭제하지 않고 남겨둠.
-   이름이 겹치지 않아 두 세트가 공존해도 충돌 없음. */
+   이름이 겹치지 않아 두 세트가 공존해도 충돌 없음.
+
+   v3의 핵심 변화: 그림자 완전 폐기, 테두리(헤어라인)로만 카드 층위를 표현함.
+   그래서 이전 라운드에 추가했던 --shadow-card, --shadow-card-hover, --color-card-surface,
+   --color-dusty-rose, --gradient-sunset 토큰은 전부 삭제함(더 이상 쓰는 곳 없음). */
 @theme {
-  --color-deep-ink: #000d10;      /* 본문 텍스트, 필드 버튼, 아이콘, 푸터 배경 */
-  --color-pure-white: #ffffff;    /* 캔버스, 카드 배경 */
-  --color-cool-ash: #8e8e95;      /* 보조 텍스트, 비활성 nav */
-  --color-pebble: #d5d3d4;        /* 헤어라인 구분선 */
-  --color-midnight-hull: #0f0f1c; /* 다크 섹션 배경 */
-  --color-clay-ember: #bc7155;    /* 유일한 웜 액센트, 화면당 한 곳만 */
+  /* ===== 색상 ===== */
+  --color-deep-ink: #09090b;      /* 기본 텍스트, 헤딩, 다크 버튼 배경 */
+  --color-pure-white: #ffffff;    /* 페이지 배경, 카드 표면 - 이제 카드도 페이지와 같은 흰색(구분은 테두리가 담당) */
+  --color-cool-ash: #71717a;      /* 보조 텍스트, 헬퍼 텍스트 */
+  --color-pebble: #ececee;        /* 카드/입력창 테두리 전용(1px 헤어라인) - 배경으로는 더 이상 안 씀 */
+  --color-graphite: #18181b;      /* 본문 텍스트, nav 텍스트 */
+  --color-midnight-hull: #27272a; /* 다크 섹션/카드 배경 */
+  --color-clay-ember: #ff5a00;    /* 오직 핵심 CTA 버튼 전용 - 뱃지/텍스트 강조/카드 배경엔 사용 금지 */
 
-  --text-hero: 60px;
-  --text-heading: 37px;
-  --text-subheading: 23px;
-  --text-body: 18px;
-  --leading-body: 29px; /* 18px 기준 1.61 비율 */
+  --color-mist: #d4d4d8;      /* 보조 구분선, 비활성 상태, 카드 hover 시 테두리 색 */
+  --color-ash-light: #a1a1aa; /* placeholder 텍스트, 비활성 라벨 */
+  --color-paper: #f4f4f5;     /* 선택적 섹션 배경 (기본은 pure-white, 특정 섹션에만) */
 
-  --radius-pill: 1000px;
-   --radius-flat: 8px;
+  /* ===== Radius (최종) ===== */
+  --radius-flat: 36px;     /* 카드 전체 */
+  --radius-input: 14px;    /* input, select, textarea */
+  --radius-badge: 12px;    /* 작은 뱃지 (필터 칩 제외) */
+  --radius-pill: 10000px;  /* 버튼, 필터 칩 */
 }

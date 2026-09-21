@@ -238,7 +238,7 @@ export default function TimelinePage() {
 
             <div className="flex gap-6 h-[650px]">
                 {/* 좌측: 여행가방 */}
-                <div className="w-72 border border-pebble rounded-flat p-4 overflow-y-auto shrink-0">
+                <div className="w-72 card-elevated p-4 overflow-y-auto shrink-0">
                     <h2 className="text-deep-ink font-bold mb-1">여행가방 <span className="text-cool-ash font-normal">{bagItems.length}곳</span></h2>
                     <p className="text-xs text-cool-ash mb-4">아래 장소를 선택해 오늘 일정에 추가하세요.</p>
 
@@ -341,7 +341,7 @@ export default function TimelinePage() {
                                             e.dataTransfer.dropEffect = 'move' // 추가 - 드롭 시에도 "이동" 커서로
                                         }}
                                         onDrop={() => handleReorder(visit.placeId)}
-                                        className="border border-pebble rounded-flat p-4 relative"
+                                        className="card-elevated p-4 relative"
                                     >
                                         {/* 드래그 핸들 - 오른쪽 상단 */}
                                         <div className="absolute top-4 right-4 grid grid-cols-2 gap-1 cursor-grab">
@@ -408,7 +408,7 @@ export default function TimelinePage() {
                 </div>
 
                 {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
-                <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
+                <div className="w-80 card-elevated overflow-hidden shrink-0 flex flex-col">
                     <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
                     <div className="h-64 shrink-0">
