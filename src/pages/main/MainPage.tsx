@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux'
 import { api } from '../../shared/api/axiosInstance'
 import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
+import DateRangePicker from '../../shared/ui/DateRangePicker'
 
 
 export default function MainPage() {
@@ -235,22 +236,19 @@ export default function MainPage() {
               {isEditingTravelInfo ? (
                 <>
                   <input
+                    placeholder='여행 제목을 입력하세요.'
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border border-pebble rounded-input px-2 py-1 text-xl font-bold outline-none focus:border-deep-ink focus:ring-0 w-40"
+                    className="border border-pebble rounded-input px-2 py-1 text-xs outline-none focus:border-deep-ink focus:ring-0 w-40"
                   />
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-pebble rounded-input px-2 py-1 outline-none focus:border-deep-ink focus:ring-0 w-36"
-                  />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-pebble rounded-input px-2 py-1 outline-none focus:border-deep-ink focus:ring-0 w-36"
+                  <DateRangePicker
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(start, end) => {
+                      setStartDate(start)
+                      setEndDate(end)
+                    }}
                   />
                   <div className="flex items-center gap-2">
                     <input
