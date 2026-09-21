@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { api } from '../../../shared/api/axiosInstance'
 import type { TravelDetail, UserProfile } from '../../../entities/travel/model/types'
 import type { Place } from '../../../entities/place/model/types'
-import { Map, CustomOverlayMap, Polyline } from 'react-kakao-maps-sdk'
+import { Map, CustomOverlayMap, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { Car } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +15,7 @@ import { useTravelDraftStore } from '../../../entities/travel/model/useTravelDra
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { addVisit, clearVisits } from '../../../entities/travel/model/visitSlice'
 import type { DayRoute } from '../../../entities/travel/model/types'
+
 
 interface TravelDetailModalProps {
     travelId: number | null
@@ -30,7 +31,11 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const [originalAuthor, setOriginalAuthor] = useState<UserProfile | null>(null)
     const [selectedDay, setSelectedDay] = useState(1)
     const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 지도 최초 위치만 담당 (이후 이동은 panTo가 처리)
+
     const mapRef = useRef<kakao.maps.Map | null>(null) // 지도 인스턴스를 저장해서 panTo를 호출하기 위함
+    const [kakaoLoading, kakaoError] = useKakaoLoader({
+        appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
+    })
     const [routes, setRoutes] = useState<DayRoute[]>([])
 
     const navigate = useNavigate()
@@ -163,7 +168,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                 endTime: visit.endTime.slice(0, 5),
             }))
         })
-        
+
         // 방금 복사해서 채워 넣은 직후라는 표시 - MainPage가 이 데이터를
         // "쓰다 만 임시 데이터"로 착각해서 지우지 않도록 함
         setJustCopied(true)
@@ -302,36 +307,46 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                 </h3>
 
                                 <div className="flex-1">
-                                    <Map
-                                        center={mapCenter}
-                                        style={{ width: '100%', height: '100%' }}
-                                        level={3}
-                                        onCreate={(map) => {
-                                            mapRef.current = map
-                                            if (dayRoutePlaces.length > 0) {
-                                                const position = new kakao.maps.LatLng(dayRoutePlaces[0].latitude, dayRoutePlaces[0].longitude)
-                                                map.panTo(position)
-                                            }
-                                        }}
-                                    >
-                                        {dayRoutePlaces.map((place, index) => (
-                                            <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
-                                                <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
-                                                    {index + 1}
-                                                </div>
-                                            </CustomOverlayMap>
-                                        ))}
+                                    {kakaoLoading ? (
+                                        <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                            지도를 불러오는 중...
+                                        </div>
+                                    ) : kakaoError ? (
+                                        <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                            지도를 불러오지 못했습니다.
+                                        </div>
+                                    ) : (
+                                        <Map
+                                            center={mapCenter}
+                                            style={{ width: '100%', height: '100%' }}
+                                            level={3}
+                                            onCreate={(map) => {
+                                                mapRef.current = map
+                                                if (dayRoutePlaces.length > 0) {
+                                                    const position = new kakao.maps.LatLng(dayRoutePlaces[0].latitude, dayRoutePlaces[0].longitude)
+                                                    map.panTo(position)
+                                                }
+                                            }}
+                                        >
+                                            {dayRoutePlaces.map((place, index) => (
+                                                <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
+                                                    <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
+                                                        {index + 1}
+                                                    </div>
+                                                </CustomOverlayMap>
+                                            ))}
 
-                                        {dayRoutePlaces.length > 1 && (
-                                            <Polyline
-                                                path={dayRoutePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
-                                                strokeWeight={3}
-                                                strokeColor="#000d10"
-                                                strokeOpacity={0.7}
-                                                strokeStyle="shortdash"
-                                            />
-                                        )}
-                                    </Map>
+                                            {dayRoutePlaces.length > 1 && (
+                                                <Polyline
+                                                    path={dayRoutePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
+                                                    strokeWeight={3}
+                                                    strokeColor="#000d10"
+                                                    strokeOpacity={0.7}
+                                                    strokeStyle="shortdash"
+                                                />
+                                            )}
+                                        </Map>
+                                    )}
                                 </div>
                             </div>
                         </div>

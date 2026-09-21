@@ -10,7 +10,7 @@ import { getUserIdFromToken } from "../../../entities/auth/model/getUserId"
 import { api } from "../../../shared/api/axiosInstance"
 import { useTravelDraftStore } from "../../../entities/travel/model/useTravelDraftStore"
 import { useNavigate } from "react-router-dom"
-import { Map, CustomOverlayMap, Polyline } from "react-kakao-maps-sdk"
+import { Map, CustomOverlayMap, Polyline, useKakaoLoader } from "react-kakao-maps-sdk"
 import { TRAVEL_STATUS } from "../../../entities/travel/model/travelStatus"
 import TravelNavTabs from "../../../widgets/travel-nav-tabs/TravelNavTabs"
 import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeOptions"
@@ -20,10 +20,16 @@ import { useParams } from "react-router-dom"
 import { uploadImage } from "../../../shared/api/uploadImage"
 
 
+
 export default function TimelinePage() {
     const { travelId } = useParams()
     const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 최초 위치만
+
     const mapRef = useRef<kakao.maps.Map | null>(null)
+    const [kakaoLoading, kakaoError] = useKakaoLoader({
+        appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
+    })
+
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const bagItems = useBagStore((state) => state.items)
@@ -411,34 +417,44 @@ export default function TimelinePage() {
                     <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
                     <div className="h-64 shrink-0">
-                        <Map center={mapCenter}
-                            style={{ width: '100%', height: '100%' }}
-                            level={9}
-                            onCreate={(map) => {
-                                mapRef.current = map
-                                if (timelinePlaces.length > 0) {
-                                    const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
-                                    map.panTo(position)
-                                }
-                            }}>
-                            {timelinePlaces.map((place, index) => (
-                                <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
-                                    <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
-                                        {index + 1}
-                                    </div>
-                                </CustomOverlayMap>
-                            ))}
+                        {kakaoLoading ? (
+                            <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                지도를 불러오는 중...
+                            </div>
+                        ) : kakaoError ? (
+                            <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+                                지도를 불러오지 못했습니다.
+                            </div>
+                        ) : (
+                            <Map center={mapCenter}
+                                style={{ width: '100%', height: '100%' }}
+                                level={9}
+                                onCreate={(map) => {
+                                    mapRef.current = map
+                                    if (timelinePlaces.length > 0) {
+                                        const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
+                                        map.panTo(position)
+                                    }
+                                }}>
+                                {timelinePlaces.map((place, index) => (
+                                    <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
+                                        <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
+                                            {index + 1}
+                                        </div>
+                                    </CustomOverlayMap>
+                                ))}
 
-                            {timelinePlaces.length > 1 && (
-                                <Polyline
-                                    path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
-                                    strokeWeight={3}
-                                    strokeColor="#000d10"
-                                    strokeOpacity={0.7}
-                                    strokeStyle="shortdash"
-                                />
-                            )}
-                        </Map>
+                                {timelinePlaces.length > 1 && (
+                                    <Polyline
+                                        path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
+                                        strokeWeight={3}
+                                        strokeColor="#000d10"
+                                        strokeOpacity={0.7}
+                                        strokeStyle="shortdash"
+                                    />
+                                )}
+                            </Map>
+                        )}
                     </div>
 
                     <div className="p-4 overflow-y-auto flex-1">
