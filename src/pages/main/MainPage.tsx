@@ -21,7 +21,6 @@ import { api } from '../../shared/api/axiosInstance'
 import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 import DateRangePicker from '../../shared/ui/DateRangePicker'
-import editIcon from '../../assets/edit.svg'
 import { Pencil } from 'lucide-react'
 
 
@@ -106,7 +105,7 @@ export default function MainPage() {
   }, [places, selectedCategory, searchQuery, priceRange])
 
   const placesForMap = useMemo(() => {
-    const bagPlaceIds = new Set(bagItems.map((item) => item.id))
+    // const bagPlaceIds = new Set(bagItems.map((item) => item.id))
     const missingBagItems = bagItems.filter((item) => !filteredPlaces.some((p) => p.id === item.id))
     return [...filteredPlaces, ...missingBagItems]
   }, [filteredPlaces, bagItems])
