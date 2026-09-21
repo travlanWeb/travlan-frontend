@@ -1,4 +1,4 @@
-import { Map, CustomOverlayMap } from 'react-kakao-maps-sdk' // MapMarker 제거
+import { Map, CustomOverlayMap, useKakaoLoader } from 'react-kakao-maps-sdk' // MapMarker 제거
 import type { Place } from '../../../entities/place/model/types'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { useMemo, useCallback, useRef, useEffect } from 'react'
@@ -24,6 +24,13 @@ interface KakaoMapProps {
 }
 
 export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBagBadges = true, moveToPlace, selectedPlaceId, hoveredPlaceId }: KakaoMapProps) {
+
+  // 카카오맵 SDK는 실제 지도를 그리는 이 컴포넌트가 마운트될 때만 로드
+  // (RootLayout에서 전역으로 로드하던 걸 옮겨옴 - 지도 없는 페이지의 로딩 속도 개선)
+  const [loading, error] = useKakaoLoader({
+    appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
+  })
+
   const bagItems = useBagStore((state) => state.items)
   const mapRef = useRef<kakao.maps.Map | null>(null)
   const hasSetInitialBoundsRef = useRef(false) // 최초 bounds 세팅이 한 번만 일어나게 막는 가드
@@ -66,6 +73,21 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBa
     mapRef.current.setLevel(mapRef.current.getLevel() + 1)
   }, [])
 
+  if (loading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+        지도를 불러오는 중...
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-sm text-cool-ash bg-mist/20">
+        지도를 불러오지 못했습니다.
+      </div>
+    )
+  }
   return (
     <div className="relative w-full h-full">
       <Map
@@ -86,13 +108,12 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBa
           if (isInBag) {
             return (
               <CustomOverlayMap key={place.id}
-              position={{ lat: place.latitude, lng: place.longitude }}
-              zIndex={isSelected ? 100 : isHovered ? 50 : 10}>
+                position={{ lat: place.latitude, lng: place.longitude }}
+                zIndex={isSelected ? 100 : isHovered ? 50 : 10}>
                 <div
                   onClick={() => onMarkerClick?.(place)}
-                  className={`rounded-full bg-deep-ink text-white flex items-center justify-center cursor-pointer transition-all ${
-                    isSelected ? 'w-8 h-8 ring-4 ring-clay-ember' : isHovered ? 'w-7 h-7 ring-4 ring-mist' : 'w-6 h-6'
-                  }`}
+                  className={`rounded-full bg-deep-ink text-white flex items-center justify-center cursor-pointer transition-all ${isSelected ? 'w-8 h-8 ring-4 ring-clay-ember' : isHovered ? 'w-7 h-7 ring-4 ring-mist' : 'w-6 h-6'
+                    }`}
                 >
                   <Check size={14} />
                 </div>
@@ -105,13 +126,12 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBa
 
           return (
             <CustomOverlayMap key={place.id}
-            position={{ lat: place.latitude, lng: place.longitude }}
-            zIndex={isSelected ? 100 : isHovered ? 50 : 1} >
+              position={{ lat: place.latitude, lng: place.longitude }}
+              zIndex={isSelected ? 100 : isHovered ? 50 : 1} >
               <div
                 onClick={() => onMarkerClick?.(place)}
-                className={`rounded-full flex items-center justify-center cursor-pointer shadow-sm border-2 border-pure-white transition-all ${
-                  isSelected ? 'w-11 h-11 ring-4 ring-deep-ink' : isHovered ? 'w-10 h-10 ring-4 ring-mist' : 'w-8 h-8'
-                }`}
+                className={`rounded-full flex items-center justify-center cursor-pointer shadow-sm border-2 border-pure-white transition-all ${isSelected ? 'w-11 h-11 ring-4 ring-deep-ink' : isHovered ? 'w-10 h-10 ring-4 ring-mist' : 'w-8 h-8'
+                  }`}
                 style={{ backgroundColor: markerColor }}
               >
                 <IconComponent size={isSelected ? 20 : isHovered ? 18 : 16} color="white" />
