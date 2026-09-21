@@ -34,7 +34,7 @@ export default function MainPage() {
   const isNewTravel = travelId === 'new' // travel id 가 new 이면 newTravel 확인
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
-  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId } = useTravelDraftStore()
+  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied } = useTravelDraftStore()
   console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
@@ -133,6 +133,10 @@ export default function MainPage() {
 
   useEffect(() => {
     if (isNewTravel) {
+      if (justCopied) {
+        setJustCopied(false)
+        return
+      }
       // 이전 편집 내용 남아있을 경우 저장 관련 경고 메시지 추가
       const hasUnsavedDraft = name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
 
