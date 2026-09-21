@@ -27,13 +27,11 @@ export default function EditProfilePage() {
 
     useEffect(() => {
         if (!accessToken) return
-        const userId = getUserIdFromToken(accessToken)
 
         const fetchThresholds = async () => {
             try {
-                const response = await api.get(`/users/${userId}`)
+                const response = await api.get('/users/me')
                 setCheapThreshold(response.data.cheapThreshold)
-                setNormalThreshold(response.data.normalThreshold)
                 setPremiumThreshold(response.data.premiumThreshold)
             } catch (error) {
                 console.error('가격 기준 조회 실패', error)
