@@ -1,6 +1,6 @@
-import { handleCreateTravel } from '../../../shared/lib/tempHandlers'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
+import { useNavigate } from 'react-router-dom'
 
 const features = [
   { title: '지도에서 필터링', desc: '원하는 조건으로 여행지를 검색하고 골라보세요.' },
@@ -13,6 +13,7 @@ function HomePage() {
 
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
   const name = useSelector((state: RootState) => state.auth.name)
+  const navigate = useNavigate()
 
   return (
     <div className="w-full">
@@ -84,7 +85,7 @@ function HomePage() {
 
         <button
           type="button"
-          onClick={handleCreateTravel}
+          onClick={() => navigate('/travels/new/map')}
           className="rounded-pill bg-deep-ink text-pure-white px-8 py-3 text-[18px] font-semibold"
         >
           여행 만들기
