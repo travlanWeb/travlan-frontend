@@ -88,7 +88,7 @@ export default function EditProfilePage() {
             <div className="flex gap-3">
                 <button
                     onClick={() => navigate('/mypage')}
-                    className="rounded-pill border border-pebble text-cool-ash px-6 py-2.5 text-sm font-semibold"
+                    className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-6 py-2.5 text-sm font-semibold"
                 >
                     취소
                 </button>

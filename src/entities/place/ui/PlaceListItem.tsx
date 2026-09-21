@@ -1,55 +1,81 @@
 import type { Place } from "../model/types";
-import { useBagStore } from "../../bag/model/useBagStore"; // 담긴 순서 알기 위해서 import
+import { useBagStore } from "../../bag/model/useBagStore";
+import { Check } from 'lucide-react'
 
 interface PlaceListItemProps {
   place: Place
   isSelected: boolean
-  onClick: () => void // 함수 모양만 정의하고 실제 동작은 부모가 채워넣는다
+  onClick: () => void
+  onDetailClick: () => void // "상세보기" 버튼 전용 - 카드 선택(onClick)과는 별개로 모달을 염
+  onHover?: () => void
+  onHoverEnd?: () => void
 }
 
-export default function PlaceListItem({ place, isSelected, onClick }: PlaceListItemProps) {
-  // zustand 라서 부모(mainPage)가 몇 번째로 담겼는지 계산해서 넘겨주지 않아도 컴포넌트가 스스로 정보 가져다 씀
+export default function PlaceListItem({ place, isSelected, onClick, onDetailClick, onHover, onHoverEnd }: PlaceListItemProps) {
   const bagItems = useBagStore((state) => state.items)
-  const bagIndex = bagItems.findIndex((item) => item.id === place.id) // 몇 번째에 있는지 index 반환
-  const isInBag = bagIndex !== -1 // 가방 안에 있는지 없는지 확인
-
+  const isInBag = bagItems.some((item) => item.id === place.id)
 
   const addItem = useBagStore((state) => state.addItem)
   const removeItem = useBagStore((state) => state.removeItem)
 
   return (
+    // 에어비앤비 스타일 - 테두리/그림자 없이 여백만으로 카드를 구분함
+    // 선택된 카드만 은은한 배경(bg-paper)으로 표시 (border/shadow는 안 씀)
     <div
       onClick={onClick}
+      onMouseEnter={onHover}
+      onMouseLeave={onHoverEnd}
       role="button"
-      className={`w-full text-left rounded-flat p-3 flex flex-col gap-2 transition-colors ${
-        isSelected ? 'border border-deep-ink bg-pebble/20' : 'card-elevated-hover'
-        }`}
+      className={`text-left cursor-pointer rounded-flat p-2 transition-colors ${isSelected ? 'bg-paper' : ''}`}
     >
-      <div className="flex items-center gap-3 min-w-0">
-        {isInBag && (
-          <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-            {bagIndex + 1}
-          </div>
+      {/* 이미지 - 정사각형 */}
+      <div className="relative aspect-square rounded-flat overflow-hidden bg-pebble/20">
+        {place.imgUrl ? (
+          <img src={place.imgUrl} alt={place.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-xs text-cool-ash">사진 없음</div>
         )}
 
-        <div className="flex flex-col gap-1 min-w-0">
-          <p className="font-semibold text-deep-ink">{place.name}</p>
-          <p className="text-sm text-cool-ash">{place.address}</p>
-          <p className="text-sm text-cool-ash">
-            {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
-          </p>
-        </div>
+        {isInBag && (
+          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-deep-ink text-pure-white shadow-sm flex items-center justify-center">
+            <Check size={14} />
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation() // 담기 버튼도 div 안에 있어서 클릭 이벤트가 부모 div 에 전달됨, 이벤트 버블링 발생 방지 코드
-          isInBag ? removeItem(place.id) : addItem(place)
-        }}
-        className={`self-start rounded-pill border border-pebble px-4 py-1 text-xs transition-colors ${isInBag ? 'text-pure-white bg-deep-ink' : 'bg-pure-white'}`}
-      >
-        {isInBag ? '담김' : '담기'}
-      </button>
+      {/* 텍스트 정보 - 카드가 더 많이 보이도록 padding/gap을 좁게 잡음 */}
+      <div className="pt-2">
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-semibold text-deep-ink truncate">{place.name}</p>
+          <span className="text-sm text-cool-ash whitespace-nowrap shrink-0">
+            {place.price ? `${place.price.toLocaleString()}원` : '가격 미정'}
+          </span>
+        </div>
+        <p className="text-sm text-cool-ash mt-0.5 truncate">{place.category || '기타'}</p>
+
+        {/* 담기 / 상세보기 */}
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation() // 버튼도 카드 안에 있어서 클릭 이벤트가 카드 onClick까지 전달됨 - 버블링 방지
+              isInBag ? removeItem(place.id) : addItem(place)
+            }}
+            className={`flex-1 rounded-pill border border-pebble px-3 py-1 text-xs font-semibold transition-colors ${isInBag ? 'text-pure-white bg-deep-ink' : 'bg-pure-white text-deep-ink'
+              }`}
+          >
+            {isInBag ? '담김' : '담기'}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDetailClick()
+            }}
+            className="flex-1 rounded-pill border border-pebble bg-pure-white text-deep-ink px-3 py-1 text-xs font-semibold"
+          >
+            상세보기
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

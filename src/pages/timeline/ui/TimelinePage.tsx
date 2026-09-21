@@ -188,6 +188,7 @@ export default function TimelinePage() {
 
 
     return (
+        <div className="min-h-screen bg-pure-white">
         <div className="max-w-[1400px] mx-auto px-10 py-8">
             {/* 여행 정보 + 예산 바 */}
             <div className="border-b border-pebble pb-6 mb-6">
@@ -238,7 +239,7 @@ export default function TimelinePage() {
 
             <div className="flex gap-6 h-[650px]">
                 {/* 좌측: 여행가방 */}
-                <div className="w-72 card-elevated p-4 overflow-y-auto shrink-0">
+                <div className="w-72 border border-pebble rounded-flat p-4 overflow-y-auto shrink-0">
                     <h2 className="text-deep-ink font-bold mb-1">여행가방 <span className="text-cool-ash font-normal">{bagItems.length}곳</span></h2>
                     <p className="text-xs text-cool-ash mb-4">아래 장소를 선택해 오늘 일정에 추가하세요.</p>
 
@@ -341,7 +342,7 @@ export default function TimelinePage() {
                                             e.dataTransfer.dropEffect = 'move' // 추가 - 드롭 시에도 "이동" 커서로
                                         }}
                                         onDrop={() => handleReorder(visit.placeId)}
-                                        className="card-elevated p-4 relative"
+                                        className="border border-pebble rounded-flat hover:border-mist transition-colors duration-150 p-4 relative"
                                     >
                                         {/* 드래그 핸들 - 오른쪽 상단 */}
                                         <div className="absolute top-4 right-4 grid grid-cols-2 gap-1 cursor-grab">
@@ -363,7 +364,7 @@ export default function TimelinePage() {
                                                         dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
                                                     }
                                                 }}
-                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
+                                                className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                             >
                                                 <option value="">시작 시간</option>
                                                 {timeOptions.map((time) => (
@@ -374,7 +375,7 @@ export default function TimelinePage() {
                                             <select
                                                 value={visit.endTime}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
-                                                className="border border-pebble px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
+                                                className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                             >
                                                 <option value="">종료 시간</option>
                                                 {timeOptions.map((time) => (
@@ -397,7 +398,7 @@ export default function TimelinePage() {
                                                 type="number"
                                                 value={visit.cost}
                                                 onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
-                                                className="border border-pebble px-2 py-1 text-xs w-24 outline-none focus:border-deep-ink focus:ring-0"
+                                                className="border border-pebble rounded-input px-2 py-1 text-xs w-24 outline-none focus:border-deep-ink focus:ring-0"
                                             />
                                         </div>
                                     </div>
@@ -408,7 +409,7 @@ export default function TimelinePage() {
                 </div>
 
                 {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
-                <div className="w-80 card-elevated overflow-hidden shrink-0 flex flex-col">
+                <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
                     <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
 
                     <div className="h-64 shrink-0">
@@ -469,17 +470,18 @@ export default function TimelinePage() {
             <div className="flex gap-3 mt-6">
                 <button
                     onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
-                    className="rounded-pill border border-pebble text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                    className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
                 >
                     임시저장
                 </button>
                 <button
                     onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
-                    className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
+                    className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
                 >
                     여행 저장하기
                 </button>
             </div>
+        </div>
         </div>
     )
 }
