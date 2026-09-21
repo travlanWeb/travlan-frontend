@@ -2,6 +2,7 @@
 // 9/14 - 페이지 구조(제목 + 목록) 잡아두기
 // 9/16 - api 연결, 데이터 불러오기 구현
 // 9/20 - 가격 티어(저렴/일반/프리미엄) 필터 추가
+// 9/21 - 커뮤니티 목록(GET /travels) 조회 로직 복구
 
 import { useState, useEffect, useMemo } from "react"
 import type { TravelCard } from "../../../entities/travel/model/types"
@@ -16,15 +17,18 @@ import { getPriceTier } from '../../../entities/user/model/getPriceTier'
 
 const MAX_BUDGET = 10000000
 
+// 비로그인 사용자에게 블러 처리해서 보여줄 미리보기용 목데이터
+// userId: -1은 실제 존재하지 않는 유저이므로, TravelCardItem 쪽에서
+// userId > 0일 때만 작성자 정보를 조회하도록 가드가 되어있는지 확인 필요
+const MOCK_PREVIEW_CARDS: TravelCard[] = [
+  { id: -1, name: '제주 힐링 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-01', endDate: '2026-10-03', totalBudget: 350000, updatedAt: '2026-01-01T00:00:00' },
+  { id: -2, name: '부산 바다 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000, updatedAt: '2026-01-01T00:00:00' },
+  { id: -3, name: '경주 역사 탐방', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000, updatedAt: '2026-01-01T00:00:00' },
+]
+
 export default function CommunityPage() {
 
   const [budgetRange, setBudgetRange] = useState<[number, number]>([0, MAX_BUDGET])
-
-  const MOCK_PREVIEW_CARDS: TravelCard[] = [
-    { id: -1, name: '제주 힐링 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-01', endDate: '2026-10-03', totalBudget: 350000, updatedAt: '2026-01-01T00:00:00' },
-    { id: -2, name: '부산 바다 여행', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-05', endDate: '2026-10-06', totalBudget: 180000, updatedAt: '2026-01-01T00:00:00' },
-    { id: -3, name: '경주 역사 탐방', userId: -1, originalId: null, status: 'COMPLETED', saveCount: 0, edited: false, travelImage: null, startDate: '2026-10-10', endDate: '2026-10-12', totalBudget: 220000, updatedAt: '2026-01-01T00:00:00' },
-  ]
 
   const navigate = useNavigate()
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
@@ -60,6 +64,22 @@ export default function CommunityPage() {
 
     return result
   }, [displayedTravels, searchQuery, budgetRange, selectedTier, cheapThreshold, premiumThreshold])
+
+  // 로그인한 사용자만 커뮤니티에 올라온 여행 목록을 가져옴
+  // (비로그인은 위쪽 MOCK_PREVIEW_CARDS로 블러 미리보기만 보여줌)
+  useEffect(() => {
+    if (!isLoggedIn) return
+
+    const fetchTravels = async () => {
+      try {
+        const response = await api.get('/travels')
+        setTravels(response.data)
+      } catch (error) {
+        console.error('커뮤니티 여행 목록 조회 실패', error)
+      }
+    }
+    fetchTravels()
+  }, [isLoggedIn])
 
   // 로그인한 사용자의 가격 기준값 불러오기
   useEffect(() => {
