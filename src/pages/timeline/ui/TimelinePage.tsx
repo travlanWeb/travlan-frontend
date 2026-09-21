@@ -308,30 +308,27 @@ export default function TimelinePage() {
                             <p className="text-sm text-cool-ash">왼쪽 여행가방에서 장소를 추가하면 이곳에 일정이 표시됩니다.</p>
                         )}
 
-                        <div className="flex">
-                            {/* 세로선 + 번호 */}
-                            <div className="flex flex-col items-center mr-4">
-                                {visitsForSelectedDay.map((visit, index) => (
-                                    <div key={visit.placeId} className="flex flex-col items-center">
-                                        <div className="w-7 h-7 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-                                            {index + 1}
+                        <div className="flex flex-col">
+                            {visitsForSelectedDay.map((visit, index) => {
+                                const place = bagItems.find((item) => item.id === visit.placeId)
+                                if (!place) return null
+                                const isLast = index === visitsForSelectedDay.length - 1
+
+                                return (
+                                    <div key={visit.placeId} className="flex gap-4">
+                                        {/* 번호 + 세로선 - 카드와 같은 flex row 안에 넣어서
+                                            카드 높이가 얼마든 이 컬럼 높이가 자동으로 카드에 맞춰짐
+                                            (원래는 별도 컬럼으로 그리다 보니 카드 높이가 다를 때마다 어긋났음) */}
+                                        <div className="flex flex-col items-center shrink-0">
+                                            <div className="w-7 h-7 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+                                                {index + 1}
+                                            </div>
+                                            {!isLast && (
+                                                <div className="w-px flex-1 bg-pebble my-1" />
+                                            )}
                                         </div>
-                                        {index < visitsForSelectedDay.length - 1 && (
-                                            <div className="w-px flex-1 bg-pebble my-1" style={{ minHeight: '80px' }} />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
 
-                            {/* 일정 카드들 */}
-                            <div className="flex-1 flex flex-col gap-4">
-                                {visitsForSelectedDay.map((visit) => {
-                                    const place = bagItems.find((item) => item.id === visit.placeId)
-                                    if (!place) return null
-
-                                    return (
                                         <div
-                                            key={visit.placeId}
                                             draggable
                                             onDragStart={(e) => {
                                                 setDraggedVisitId(visit.placeId)
@@ -342,7 +339,7 @@ export default function TimelinePage() {
                                                 e.dataTransfer.dropEffect = 'move' // 추가 - 드롭 시에도 "이동" 커서로
                                             }}
                                             onDrop={() => handleReorder(visit.placeId)}
-                                            className="border border-pebble rounded-flat hover:border-mist transition-colors duration-150 p-4 relative"
+                                            className={`flex-1 border border-pebble rounded-flat hover:border-mist transition-colors duration-150 p-4 relative ${isLast ? '' : 'mb-4'}`}
                                         >
                                             {/* 드래그 핸들 - 오른쪽 상단 */}
                                             <div className="absolute top-4 right-4 grid grid-cols-2 gap-1 cursor-grab">
@@ -402,64 +399,6 @@ export default function TimelinePage() {
                                                 />
                                             </div>
                                         </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
-                    <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
-                        <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
-
-                        <div className="h-64 shrink-0">
-                            <Map center={mapCenter}
-                                style={{ width: '100%', height: '100%' }}
-                                level={9}
-                                onCreate={(map) => {
-                                    mapRef.current = map
-                                    if (timelinePlaces.length > 0) {
-                                        const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
-                                        map.panTo(position)
-                                    }
-                                }}>
-                                {timelinePlaces.map((place, index) => (
-                                    <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
-                                        <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
-                                            {index + 1}
-                                        </div>
-                                    </CustomOverlayMap>
-                                ))}
-
-                                {timelinePlaces.length > 1 && (
-                                    <Polyline
-                                        path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
-                                        strokeWeight={3}
-                                        strokeColor="#000d10"
-                                        strokeOpacity={0.7}
-                                        strokeStyle="shortdash"
-                                    />
-                                )}
-                            </Map>
-                        </div>
-
-                        <div className="p-4 overflow-y-auto flex-1">
-                            {visitsForSelectedDay.map((visit, index) => {
-                                const place = bagItems.find((item) => item.id === visit.placeId)
-                                if (!place) return null
-                                return (
-                                    <div
-                                        key={visit.placeId}
-                                        onClick={() => handleMoveToPlace(place)}
-                                        className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
-                                                {index + 1}
-                                            </div>
-                                            <span className="text-sm text-deep-ink">{place.name}</span>
-                                        </div>
-                                        <span className="text-xs text-cool-ash">{visit.startTime || '--:--'}</span>
                                     </div>
                                 )
                             })}
@@ -467,20 +406,78 @@ export default function TimelinePage() {
                     </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
-                    <button
-                        onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
-                        className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                    >
-                        임시저장
-                    </button>
-                    <button
-                        onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
-                        className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                    >
-                        여행 저장하기
-                    </button>
+                {/* 우측: 오늘의 경로 (지도 + 요약 리스트) */}
+                <div className="w-80 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
+                    <h2 className="text-deep-ink font-bold p-4 pb-2">오늘의 경로</h2>
+
+                    <div className="h-64 shrink-0">
+                        <Map center={mapCenter}
+                            style={{ width: '100%', height: '100%' }}
+                            level={9}
+                            onCreate={(map) => {
+                                mapRef.current = map
+                                if (timelinePlaces.length > 0) {
+                                    const position = new kakao.maps.LatLng(timelinePlaces[0].latitude, timelinePlaces[0].longitude)
+                                    map.panTo(position)
+                                }
+                            }}>
+                            {timelinePlaces.map((place, index) => (
+                                <CustomOverlayMap key={place.id} position={{ lat: place.latitude, lng: place.longitude }}>
+                                    <div className="w-6 h-6 rounded-full bg-deep-ink text-white text-xs flex items-center justify-center">
+                                        {index + 1}
+                                    </div>
+                                </CustomOverlayMap>
+                            ))}
+
+                            {timelinePlaces.length > 1 && (
+                                <Polyline
+                                    path={timelinePlaces.map((place) => ({ lat: place.latitude, lng: place.longitude }))}
+                                    strokeWeight={3}
+                                    strokeColor="#000d10"
+                                    strokeOpacity={0.7}
+                                    strokeStyle="shortdash"
+                                />
+                            )}
+                        </Map>
+                    </div>
+
+                    <div className="p-4 overflow-y-auto flex-1">
+                        {visitsForSelectedDay.map((visit, index) => {
+                            const place = bagItems.find((item) => item.id === visit.placeId)
+                            if (!place) return null
+                            return (
+                                <div
+                                    key={visit.placeId}
+                                    onClick={() => handleMoveToPlace(place)}
+                                    className="flex items-center justify-between py-2 border-b border-pebble cursor-pointer hover:bg-pebble/10"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 rounded-full bg-deep-ink text-pure-white text-xs flex items-center justify-center shrink-0">
+                                            {index + 1}
+                                        </div>
+                                        <span className="text-sm text-deep-ink">{place.name}</span>
+                                    </div>
+                                    <span className="text-xs text-cool-ash">{visit.startTime || '--:--'}</span>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+                <button
+                    onClick={() => handleSave(TRAVEL_STATUS.DRAFT)}
+                    className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                >
+                    임시저장
+                </button>
+                <button
+                    onClick={() => handleSave(TRAVEL_STATUS.COMPLETED)}
+                    className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                >
+                    여행 저장하기
+                </button>
             </div>
         </div>
     )
