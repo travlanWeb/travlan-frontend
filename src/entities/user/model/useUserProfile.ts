@@ -11,9 +11,13 @@ export function useUserProfile(userId: number | null) {
     const [profile, setProfile] = useState<UserProfile | null>(null)
 
     useEffect(() => {
-        if (userId === null) return
+        // userId가 없거나(null), 실존하지 않는 유저(0 이하 - 목데이터용 임시 id)면
+        // API 호출 자체를 하지 않음. 커뮤니티 비로그인 미리보기 카드가
+        // userId: -1 같은 더미값을 쓰기 때문에, 여기서 안 막으면
+        // 존재하지 않는 유저를 계속 조회하다 401만 쌓이게 됨
+        if (userId === null || userId <= 0) return
 
-        const fetchProfile =  async () => {
+        const fetchProfile = async () => {
             try {
                 const response = await api.get(`/users/${userId}`)
                 setProfile(response.data)
