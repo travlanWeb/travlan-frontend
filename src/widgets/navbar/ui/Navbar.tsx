@@ -10,6 +10,8 @@ import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux'
 import { logout } from '../../../entities/auth/model/authSlice';
 import type { RootState } from '../../../app/store'
+import { api } from '../../../shared/api/axiosInstance';
+
 
 const navItems = [
     { to: '/', label: '홈', end: true },
@@ -27,6 +29,8 @@ export default function Navbar() {
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
+    const refreshToken = useSelector((state: RootState) => state.auth.refreshToken)
+
 
     useEffect(() => {
 
@@ -38,6 +42,17 @@ export default function Navbar() {
     }, [isHome])
 
     const isOpaque = !isHome || scrolled // 불투명해야 하는가? -> 홈이 아니면 무조건 불투명, 홈이어도 스크롤 40 이상 내렸으면 불투명 (상단 코드)
+
+    const handleLogout = async () => {
+        try {
+            await api.post('/auth/logout', { refreshToken })
+        } catch (error) {
+            console.error('로그아웃 API 실패', error)
+        } finally {
+            dispatch(logout())
+            navigate('/')
+        }
+    }
 
     return (
         <header
@@ -75,7 +90,7 @@ export default function Navbar() {
                     {isLoggedIn ? (
                         <button
                             type="button"
-                            onClick={() => dispatch(logout())}>로그아웃</button>
+                            onClick={handleLogout}>로그아웃</button>
                     ) : (
                         <NavLink to="/login">로그인</NavLink>
                     )}
