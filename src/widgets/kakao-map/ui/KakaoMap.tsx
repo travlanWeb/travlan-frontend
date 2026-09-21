@@ -2,7 +2,7 @@ import { Map, CustomOverlayMap } from 'react-kakao-maps-sdk' // MapMarker 제거
 import type { Place } from '../../../entities/place/model/types'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { useMemo, useCallback, useRef, useEffect } from 'react'
-import { Landmark, Bed, ShoppingBag, UtensilsCrossed, Coffee, MapPin, Check } from 'lucide-react'
+import { Landmark, Bed, ShoppingBag, UtensilsCrossed, Coffee, MapPin, Check, Plus, Minus } from 'lucide-react'
 import { CATEGORY_COLORS, DEFAULT_MARKER_COLOR } from '../../../entities/place/model/categoryMap'
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -55,58 +55,90 @@ export default function KakaoMap({ places, onMarkerClick, onBoundsChange, showBa
     mapRef.current.panTo(position)
   }, [moveToPlace])
 
-  return (
-    <Map
-      center={center}
-      style={{ width: '100%', height: '100%' }}
-      level={8}
-      onCreate={handleMapCreate}
-      onDragEnd={handleUserBoundsChange}
-      onZoomChanged={handleUserBoundsChange}
-    >
-      {places.map((place) => {
-        const bagIndex = showBagBadges ? bagItems.findIndex((item) => item.id === place.id) : -1
-        const isInBag = bagIndex !== -1
-        const isSelected = place.id === selectedPlaceId // 추가
-        // 선택 상태가 우선이고, 선택 안 됐을 때만 호버 강조를 보여줌(둘이 동시에 겹쳐 보이지 않도록)
-        const isHovered = !isSelected && place.id === hoveredPlaceId
+  // 줌인/줌아웃 - 카카오맵은 level이 낮을수록 확대된 상태라 -1이 줌인, +1이 줌아웃
+  const handleZoomIn = useCallback(() => {
+    if (!mapRef.current) return
+    mapRef.current.setLevel(mapRef.current.getLevel() - 1)
+  }, [])
 
-        if (isInBag) {
+  const handleZoomOut = useCallback(() => {
+    if (!mapRef.current) return
+    mapRef.current.setLevel(mapRef.current.getLevel() + 1)
+  }, [])
+
+  return (
+    <div className="relative w-full h-full">
+      <Map
+        center={center}
+        style={{ width: '100%', height: '100%' }}
+        level={8}
+        onCreate={handleMapCreate}
+        onDragEnd={handleUserBoundsChange}
+        onZoomChanged={handleUserBoundsChange}
+      >
+        {places.map((place) => {
+          const bagIndex = showBagBadges ? bagItems.findIndex((item) => item.id === place.id) : -1
+          const isInBag = bagIndex !== -1
+          const isSelected = place.id === selectedPlaceId // 추가
+          // 선택 상태가 우선이고, 선택 안 됐을 때만 호버 강조를 보여줌(둘이 동시에 겹쳐 보이지 않도록)
+          const isHovered = !isSelected && place.id === hoveredPlaceId
+
+          if (isInBag) {
+            return (
+              <CustomOverlayMap key={place.id}
+              position={{ lat: place.latitude, lng: place.longitude }}
+              zIndex={isSelected ? 100 : isHovered ? 50 : 10}>
+                <div
+                  onClick={() => onMarkerClick?.(place)}
+                  className={`rounded-full bg-deep-ink text-white flex items-center justify-center cursor-pointer transition-all ${
+                    isSelected ? 'w-8 h-8 ring-4 ring-clay-ember' : isHovered ? 'w-7 h-7 ring-4 ring-mist' : 'w-6 h-6'
+                  }`}
+                >
+                  <Check size={14} />
+                </div>
+              </CustomOverlayMap>
+            )
+          }
+
+          const markerColor = CATEGORY_COLORS[place.category] ?? DEFAULT_MARKER_COLOR
+          const IconComponent = CATEGORY_ICONS[place.category] ?? MapPin
+
           return (
             <CustomOverlayMap key={place.id}
             position={{ lat: place.latitude, lng: place.longitude }}
-            zIndex={isSelected ? 100 : isHovered ? 50 : 10}>
+            zIndex={isSelected ? 100 : isHovered ? 50 : 1} >
               <div
                 onClick={() => onMarkerClick?.(place)}
-                className={`rounded-full bg-deep-ink text-white flex items-center justify-center cursor-pointer transition-all ${
-                  isSelected ? 'w-8 h-8 ring-4 ring-clay-ember' : isHovered ? 'w-7 h-7 ring-4 ring-mist' : 'w-6 h-6'
+                className={`rounded-full flex items-center justify-center cursor-pointer shadow-sm border-2 border-pure-white transition-all ${
+                  isSelected ? 'w-11 h-11 ring-4 ring-deep-ink' : isHovered ? 'w-10 h-10 ring-4 ring-mist' : 'w-8 h-8'
                 }`}
+                style={{ backgroundColor: markerColor }}
               >
-                <Check size={14} />
+                <IconComponent size={isSelected ? 20 : isHovered ? 18 : 16} color="white" />
               </div>
             </CustomOverlayMap>
           )
-        }
+        })}
+      </Map>
 
-        const markerColor = CATEGORY_COLORS[place.category] ?? DEFAULT_MARKER_COLOR
-        const IconComponent = CATEGORY_ICONS[place.category] ?? MapPin
-
-        return (
-          <CustomOverlayMap key={place.id}
-          position={{ lat: place.latitude, lng: place.longitude }}
-          zIndex={isSelected ? 100 : isHovered ? 50 : 1} >
-            <div
-              onClick={() => onMarkerClick?.(place)}
-              className={`rounded-full flex items-center justify-center cursor-pointer shadow-sm border-2 border-pure-white transition-all ${
-                isSelected ? 'w-11 h-11 ring-4 ring-deep-ink' : isHovered ? 'w-10 h-10 ring-4 ring-mist' : 'w-8 h-8'
-              }`}
-              style={{ backgroundColor: markerColor }}
-            >
-              <IconComponent size={isSelected ? 20 : isHovered ? 18 : 16} color="white" />
-            </div>
-          </CustomOverlayMap>
-        )
-      })}
-    </Map>
+      {/* 줌 컨트롤 - 카카오맵 기본 컨트롤 대신 커스텀 +/- 버튼 */}
+      <div className="absolute bottom-6 right-4 z-20 flex flex-col rounded-pill border border-pebble bg-pure-white overflow-hidden">
+        <button
+          onClick={handleZoomIn}
+          aria-label="지도 확대"
+          className="w-10 h-10 flex items-center justify-center hover:bg-mist/30 transition-colors"
+        >
+          <Plus size={18} />
+        </button>
+        <div className="h-px bg-pebble" />
+        <button
+          onClick={handleZoomOut}
+          aria-label="지도 축소"
+          className="w-10 h-10 flex items-center justify-center hover:bg-mist/30 transition-colors"
+        >
+          <Minus size={18} />
+        </button>
+      </div>
+    </div>
   )
 }
