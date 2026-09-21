@@ -18,6 +18,7 @@ import TravelNavTabs from '../../widgets/travel-nav-tabs/TravelNavTabs'
 import { useDispatch } from 'react-redux'
 import { api } from '../../shared/api/axiosInstance'
 import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
+import RangeSlider from '../../shared/ui/RangeSlider'
 
 
 
@@ -72,15 +73,12 @@ export default function MainPage() {
     navigate(`/timeline/${travelId}`)
   }
 
-
-
+  // 가격 필터 적용
+  const MAX_PLACE_PRICE = 100000
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PLACE_PRICE])
 
   // 필터 기능 추가
   const [selectedCategory, setSelectedCategory] = useState('전체')
-
-  // const filteredPlaces = selectedCategory === '전체'
-  //   ? places
-  //   : places.filter((place) => place.category === selectedCategory)
 
   const filteredPlaces = useMemo(() => {
     let result = selectedCategory === '전체'
@@ -93,8 +91,14 @@ export default function MainPage() {
       )
     }
 
+    // 가격 필터 - price가 null(가격 미정)인 장소는 필터와 무관하게 항상 포함
+    result = result.filter((place) => {
+      if (place.price === null) return true
+      return place.price >= priceRange[0] && place.price <= priceRange[1]
+    })
+
     return result
-  }, [places, selectedCategory, searchQuery])
+  }, [places, selectedCategory, searchQuery, priceRange])
 
 
   const dispatch = useDispatch()
@@ -206,6 +210,8 @@ export default function MainPage() {
 
 
 
+
+
   return (
     <div className="min-h-screen bg-pure-white">
       <div className="max-w-[1200px] mx-auto px-10">
@@ -270,8 +276,8 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* 카테고리 필터 영역 위나 옆에 추가 */}
-        <div className="flex items-center gap-2 mt-6 mb-4">
+        {/* 장소 이름으로 검색하기 */}
+        <div className="flex items-center gap-4 mt-6 mb-4">
           <input
             type="text"
             value={searchQuery}
@@ -281,6 +287,16 @@ export default function MainPage() {
           />
         </div>
 
+        <div className="max-w-xs mb-4">
+          <RangeSlider
+            min={0}
+            max={MAX_PLACE_PRICE}
+            step={5000}
+            value={priceRange}
+            onChange={setPriceRange}
+            formatLabel={(v) => `${v.toLocaleString()}원`}
+          />
+        </div>
 
         {/* 카테고리 필터 영역 */}
         <div className="flex gap-2 mt-6 mb-4">
