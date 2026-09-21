@@ -90,6 +90,7 @@ export default function MainPage() {
       )
     }
 
+
     // 가격 필터 - price가 null(가격 미정)인 장소는 필터와 무관하게 항상 포함
     result = result.filter((place) => {
       if (place.price === null) return true
@@ -98,6 +99,12 @@ export default function MainPage() {
 
     return result
   }, [places, selectedCategory, searchQuery, priceRange])
+
+  const placesForMap = useMemo(() => {
+    const bagPlaceIds = new Set(bagItems.map((item) => item.id))
+    const missingBagItems = bagItems.filter((item) => !filteredPlaces.some((p) => p.id === item.id))
+    return [...filteredPlaces, ...missingBagItems]
+  }, [filteredPlaces, bagItems])
 
 
   const dispatch = useDispatch()
@@ -323,7 +330,7 @@ export default function MainPage() {
           {/* 1단: 지도 - 카드 그리드보다 넓은 비율(약 55%) */}
           <div className="flex-[1.2] bg-pure-white rounded-flat overflow-hidden h-full">
             <KakaoMap
-              places={filteredPlaces}
+              places={placesForMap}
               onMarkerClick={setSelectedPlace}
               onBoundsChange={setMapBounds}
               moveToPlace={selectedPlace}
