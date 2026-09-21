@@ -8,6 +8,7 @@ interface TravelCardBaseProps {
     authorProfileImage?: string
     onClick?: () => void
     footer?: React.ReactNode // 수정/삭제 버튼 등, 페이지마다 다른 하단 영역
+    imageUrl?: string | null
 }
 
 export default function TravelCardBase({
@@ -18,16 +19,18 @@ export default function TravelCardBase({
     statusBadge,
     authorName,
     authorProfileImage,
+    imageUrl,
     onClick,
     footer,
 }: TravelCardBaseProps) {
     return (
-        <div
-            onClick={onClick}
-            className={`border border-pebble rounded-flat overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
-        >
-            <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash">
-                대표 사진
+        <div onClick={onClick} className={`border border-pebble rounded-flat overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}>
+            <div className="h-32 bg-pebble/20 flex items-center justify-center text-xs text-cool-ash overflow-hidden">
+                {imageUrl ? (
+                    <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                    '대표 사진'
+                )}
             </div>
 
             <div className="p-4">

@@ -17,6 +17,7 @@ import { addMinutesToTime, generateTimeOptions } from "../../../shared/lib/timeO
 import { CATEGORY_DURATION_MINUTES } from "../../../entities/place/model/categoryMap"
 import { CATEGORY_FILTERS } from "../../../entities/place/model/categoryMap"
 import { useParams } from "react-router-dom"
+import { uploadImage } from "../../../shared/api/uploadImage"
 
 
 export default function TimelinePage() {
@@ -28,10 +29,33 @@ export default function TimelinePage() {
     const bagItems = useBagStore((state) => state.items)
     const visits = useSelector((state: RootState) => state.visit.items)
     const accessToken = useSelector((state: RootState) => state.auth.accessToken)
-    const { name, startDate, endDate, totalBudget, originalId } = useTravelDraftStore()
+    const { name, startDate, endDate, totalBudget, originalId, travelImage, setTravelImage } = useTravelDraftStore()
     const [draggedVisitId, setDraggedVisitId] = useState<number | null>(null)
     const [selectedBagCategory, setSelectedBagCategory] = useState('전체')
 
+    // 여행 사진 업로드
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        try {
+            const url = await uploadImage(file)
+            setTravelImage(url)
+        } catch (error) {
+            console.error('여행 사진 업로드 실패', error)
+        }
+    }
+
+    // 기본값 계산 함수
+    const getDefaultTravelImage = () => {
+        const day1Visits = visits.filter((v) => v.day === 1).sort((a, b) => a.visitOrder - b.visitOrder)
+        if (day1Visits.length > 0) {
+            const firstPlace = bagItems.find((item) => item.id === day1Visits[0].placeId)
+            if (firstPlace?.imgUrl) return firstPlace.imgUrl
+        }
+        return null // 없으면 null - 화면에서 플레이스홀더로 처리
+    }
+
+    const previewImage = travelImage || getDefaultTravelImage()
 
     // 지금 보고 있는 Day (탭)
     const [selectedDay, setSelectedDay] = useState(1)
@@ -95,32 +119,32 @@ export default function TimelinePage() {
 
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
-    if (!accessToken) return
-    const userId = getUserIdFromToken(accessToken)
+        if (!accessToken) return
+        const userId = getUserIdFromToken(accessToken)
 
-    const formattedVisits = visits.map((visit) => ({
-        ...visit,
-        startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
-        endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
-    }))
+        const formattedVisits = visits.map((visit) => ({
+            ...visit,
+            startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
+            endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
+        }))
 
-    try {
-        if (travelId && travelId !== 'new') {
-            // 기존 여행 수정 - PUT, userId/originalId 없음
-            const payload = { name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits }
-            const response = await api.put(`/travels/${travelId}`, payload)
-            console.log("수정 성공", response.data)
-        } else {
-            // 신규 생성 - POST, userId/originalId 포함
-            const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
-            const response = await api.post('/travels', payload)
-            console.log("저장 성공", response.data)
+        try {
+            if (travelId && travelId !== 'new') {
+                // 기존 여행 수정 - PUT, userId/originalId 없음
+                const payload = { name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits }
+                const response = await api.put(`/travels/${travelId}`, payload)
+                console.log("수정 성공", response.data)
+            } else {
+                // 신규 생성 - POST, userId/originalId 포함
+                const payload = { userId, name, totalBudget, status, startDate, endDate, bags, visits: formattedVisits, originalId }
+                const response = await api.post('/travels', payload)
+                console.log("저장 성공", response.data)
+            }
+            navigate('/mypage')
+        } catch (error) {
+            console.error("저장 실패", error)
         }
-        navigate('/mypage')
-    } catch (error) {
-        console.error("저장 실패", error)
     }
-}
 
     // 지도에 찍을 좌표들 - 선택된 Day의 visitOrder 순서대로
     const timelinePlaces = visitsForSelectedDay
@@ -167,6 +191,25 @@ export default function TimelinePage() {
         <div className="max-w-[1400px] mx-auto px-10 py-8">
             {/* 여행 정보 + 예산 바 */}
             <div className="border-b border-pebble pb-6 mb-6">
+
+
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-16 h-16 rounded-flat bg-pebble/20 overflow-hidden flex items-center justify-center text-xs text-cool-ash shrink-0">
+                        {previewImage ? (
+                            <img src={previewImage} alt="대표 사진" className="w-full h-full object-cover" />
+                        ) : (
+                            '사진'
+                        )}
+                    </div>
+                    <label className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold cursor-pointer">
+                        대표 사진 변경
+                        <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    </label>
+                    {!travelImage && previewImage && (
+                        <span className="text-xs text-cool-ash">1일차 첫 장소 사진이 기본으로 사용됩니다</span>
+                    )}
+                </div>
+                
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-2xl font-bold text-deep-ink">{name || '여행 이름'}</h1>
                     <TravelNavTabs />
@@ -206,8 +249,8 @@ export default function TimelinePage() {
                                 key={category}
                                 onClick={() => setSelectedBagCategory(category)}
                                 className={`px-3 py-1 text-xs rounded-pill border cursor-pointer ${selectedBagCategory === category
-                                        ? 'bg-deep-ink text-pure-white border-deep-ink'
-                                        : 'border-pebble text-cool-ash'
+                                    ? 'bg-deep-ink text-pure-white border-deep-ink'
+                                    : 'border-pebble text-cool-ash'
                                     }`}
                             >
                                 {category}

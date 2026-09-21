@@ -12,6 +12,7 @@ export default function TravelCardItem({ travel, onClick }: TravelCardItemProps)
 
     return (
         <TravelCardBase
+            imageUrl={travel.travelImage}
             name={travel.name}
             startDate={travel.startDate}
             endDate={travel.endDate}

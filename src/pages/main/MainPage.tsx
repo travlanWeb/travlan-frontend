@@ -21,7 +21,6 @@ import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 
 
-
 export default function MainPage() {
 
   const places = usePlaces()
@@ -207,8 +206,6 @@ export default function MainPage() {
       return mapBounds.contain(position)
     })
     : filteredPlaces
-
-
 
 
 

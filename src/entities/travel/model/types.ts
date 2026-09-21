@@ -34,6 +34,7 @@ export interface TravelCard {
     startDate: string
     endDate: string
     updatedAt: string
+    travelImage: string | null
 }
 
 // bags 배열 안의 항목 하나
@@ -92,6 +93,7 @@ export interface MyTravelCard {
   userId: number
   originalId: number | null
   edited: boolean // 리믹스 등
+  travelImage: string | null
   totalBudget: number
   status: string
   saveCount: number // 받은 찜 개수 추가
