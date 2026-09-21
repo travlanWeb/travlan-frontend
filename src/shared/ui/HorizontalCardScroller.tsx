@@ -38,7 +38,7 @@ export default function HorizontalCardScroller({ title, subtitle, onSeeAll, chil
                 {/* 왼쪽 화살표 */}
                 <button
                     onClick={() => scrollByAmount('left')}
-                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-pure-white border border-pebble flex items-center justify-center shadow-sm"
+                    className="absolute -left-12 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-pure-white border border-pebble flex items-center justify-center shadow-sm"
                 >
                     <ChevronLeft size={18} />
                 </button>
@@ -51,7 +51,7 @@ export default function HorizontalCardScroller({ title, subtitle, onSeeAll, chil
                 {/* 오른쪽 화살표 */}
                 <button
                     onClick={() => scrollByAmount('right')}
-                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-pure-white border border-pebble flex items-center justify-center shadow-sm"
+                    className="absolute -right-12 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-pure-white border border-pebble flex items-center justify-center shadow-sm"
                 >
                     <ChevronRight size={18} />
                 </button>
