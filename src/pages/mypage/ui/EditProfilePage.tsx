@@ -79,7 +79,7 @@ export default function EditProfilePage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full border border-pebble px-4 py-3 text-deep-ink"
+                    className="w-full border border-pebble px-4 py-3 text-deep-ink outline-none focus:border-deep-ink focus:ring-0"
                 />
             </div>
 

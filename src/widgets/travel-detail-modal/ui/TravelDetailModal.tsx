@@ -7,6 +7,7 @@ import { api } from '../../../shared/api/axiosInstance'
 import type { TravelDetail, UserProfile } from '../../../entities/travel/model/types'
 import type { Place } from '../../../entities/place/model/types'
 import { Map, CustomOverlayMap, Polyline } from 'react-kakao-maps-sdk'
+import { Car } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -181,9 +182,9 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-            <div className="bg-white rounded-flat w-full h-full max-w-[1600px] flex flex-col overflow-hidden">
-                {/* 상단 바 */}
-                <div className="border-b border-pebble px-8 py-5 flex items-center justify-between shrink-0">
+            <div className="bg-pure-white border border-pebble rounded-flat w-full h-full max-w-[1600px] flex flex-col overflow-hidden">
+                {/* 상단 바 - 여백을 넉넉하게 줌 */}
+                <div className="border-b border-pebble px-10 py-7 flex items-center justify-between shrink-0">
                     <div>
                         {detail && (
                             <>
@@ -195,7 +196,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                     {originalAuthor && detail.originalId && (
                                         <button
                                             onClick={() => onNavigateToOriginal?.(detail.originalId!)}
-                                            className="text-sm text-deep-ink underline"
+                                            className="text-sm text-clay-ember hover:underline"
                                         >
                                             원작: {originalAuthor.name}님의 여행 보러가기
                                         </button>
@@ -241,16 +242,19 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                     <p className="text-sm text-cool-ash">이 날짜엔 등록된 일정이 없습니다.</p>
                                 )}
 
-                                <div className="flex flex-col gap-4">
+                                <div className="flex flex-col">
                                     {visitsForSelectedDay.map((visit, index) => {
                                         const place = dayRoutePlaces.find((p) => p.id === visit.placeId)
                                         const leg = getLegAfter(visit.id)
+                                        const isLast = index === visitsForSelectedDay.length - 1
+                                        // 다음 카드로 이어지는 이동 정보가 있을 때만 커넥터를 그림 - gap 대신 이 영역이 카드 사이 여백을 담당함
+                                        const showConnector = !isLast && leg?.available
 
                                         return (
                                             <div key={visit.id}>
                                                 <div
                                                     onClick={() => place && handleMoveToPlace(place)}
-                                                    className="card-elevated-hover p-4 cursor-pointer hover:bg-pebble/10 transition-colors"
+                                                    className="border border-pebble rounded-[20px] p-4 cursor-pointer hover:border-mist transition-colors duration-150"
                                                 >
                                                     <p className="text-sm text-cool-ash mb-1">
                                                         {visit.startTime.slice(0, 5)} - {visit.endTime.slice(0, 5)}
@@ -264,11 +268,21 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                                                     <p className="text-sm text-cool-ash">{visit.address}</p>
                                                 </div>
 
-                                                {index < visitsForSelectedDay.length - 1 && leg?.available && (
-                                                    <div className="flex items-center gap-2 py-2 pl-4 text-xs text-cool-ash">
-                                                        <span>🚗</span>
-                                                        <span>{(leg.distance / 1000).toFixed(1)}km · 약 {Math.round(leg.duration / 60)}분</span>
+                                                {showConnector ? (
+                                                    // 카드 왼쪽에 붙는 타임라인 커넥터: 점-세로선-점 + 이동정보 뱃지
+                                                    <div className="flex items-center gap-3 pl-4 py-2">
+                                                        <div className="flex flex-col items-center h-10 shrink-0">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-mist shrink-0" />
+                                                            <span className="w-px flex-1 bg-pebble" />
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-mist shrink-0" />
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 bg-paper rounded-badge px-2.5 py-1 text-xs text-cool-ash">
+                                                            <Car className="w-3.5 h-3.5 shrink-0" />
+                                                            <span>{(leg.distance / 1000).toFixed(1)}km · 약 {Math.round(leg.duration / 60)}분</span>
+                                                        </div>
                                                     </div>
+                                                ) : (
+                                                    !isLast && <div className="h-4" />
                                                 )}
                                             </div>
                                         )
@@ -277,7 +291,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             </div>
 
                             {/* 지도 + 경로 요약 */}
-                            <div className="flex-1 card-elevated overflow-hidden shrink-0 flex flex-col">
+                            <div className="flex-1 border border-pebble rounded-flat overflow-hidden shrink-0 flex flex-col">
                                 <h3 className="text-deep-ink font-bold p-4 pb-2 shrink-0">
                                     {selectedDay}일차 경로
                                 </h3>
@@ -322,14 +336,16 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                             <button
                                 type="button"
                                 onClick={handleLike}
-                                className="rounded-pill border border-pebble text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                                className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
                             >
                                 찜하기
                             </button>
+                            {/* 이 화면의 핵심 CTA라 clay-ember 사용. 텍스트는 흰색 대비(3.13:1)가 기준 미달이라
+                                deep-ink로 씀(대비 6.36:1) - 지난 라운드에 확정한 CTA 색 조합 규칙 */}
                             <button
                                 type="button"
                                 onClick={handleCopyToMyTravel}
-                                className="rounded-pill bg-deep-ink text-pure-white px-6 py-2.5 text-sm font-semibold"
+                                className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
                             >
                                 수정해서 내 여행으로 저장
                             </button>

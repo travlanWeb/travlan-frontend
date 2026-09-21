@@ -223,19 +223,19 @@ export default function MainPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border border-pebble px-2 py-1 text-xl font-bold"
+                    className="border border-pebble px-2 py-1 text-xl font-bold outline-none focus:border-deep-ink focus:ring-0"
                   />
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-pebble px-2 py-1"
+                    className="border border-pebble px-2 py-1 outline-none focus:border-deep-ink focus:ring-0"
                   />
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-pebble px-2 py-1"
+                    className="border border-pebble px-2 py-1 outline-none focus:border-deep-ink focus:ring-0"
                   />
                   <div className="flex items-center gap-2">
                     <input
@@ -243,7 +243,7 @@ export default function MainPage() {
                       inputMode="numeric" // 모바일 숫자 키패드 뜨게끔
                       value={totalBudget.toLocaleString()}
                       onChange={handleBudgetInput}
-                      className="border border-pebble px-2 py-1 w-32 text-right"
+                      className="border border-pebble px-2 py-1 w-32 text-right outline-none focus:border-deep-ink focus:ring-0"
                     />
                     <span className="text-sm text-cool-ash">원</span>
                   </div>
@@ -280,7 +280,7 @@ export default function MainPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="장소 이름으로 검색"
-            className="border border-pebble px-4 py-2 text-sm w-64"
+            className="border border-pebble px-4 py-2 text-sm w-64 outline-none focus:border-deep-ink focus:ring-0"
           />
         </div>
 

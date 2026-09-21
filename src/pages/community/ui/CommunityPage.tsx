@@ -83,13 +83,15 @@ export default function CommunityPage() {
           {/* 검색 + 가격 필터를 하나의 바로 통합.
               그림자 대신 헤어라인 테두리(border-pebble)로 구분하고, radius는 rounded-input(14px)로 통일
               좁은 화면(모바일)에서는 세로로 쌓이고, md 이상에서는 가로로 나란히 배치됨 */}
-          <div className="flex flex-col md:flex-row md:items-center max-w-2xl bg-pure-white border border-pebble rounded-input px-6 py-3">
+          <div className="flex flex-col md:flex-row md:items-center max-w-2xl bg-pure-white border border-pebble rounded-input px-6 py-3 focus-within:border-deep-ink transition-colors">
+            {/* 이 input은 자체 테두리가 없이 부모(pill 컨테이너) 테두리에 얹혀있는 구조라,
+                포커스 스타일도 input이 아니라 부모의 focus-within:border-deep-ink로 표현함 */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="여행 이름으로 검색"
-              className="flex-1 min-w-0 bg-transparent text-sm placeholder:text-ash-light"
+              className="flex-1 min-w-0 bg-transparent text-sm placeholder:text-ash-light outline-none focus:ring-0"
             />
 
             {/* 구분선 - 세로 배치일 땐 가로선, 가로 배치일 땐 세로선으로 바뀜 */}

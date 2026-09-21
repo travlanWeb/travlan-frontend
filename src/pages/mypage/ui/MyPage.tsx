@@ -6,6 +6,7 @@ import { api } from '../../../shared/api/axiosInstance'
 import { useMyTravels } from '../../../entities/travel/model/useMyTravels'
 import { TRAVEL_STATUS } from '../../../entities/travel/model/travelStatus'
 import TravelCardBase from '../../../shared/ui/TravelCardBase'
+import HorizontalCardScroller from '../../../shared/ui/HorizontalCardScroller'
 
 export default function MyPage() {
   const navigate = useNavigate()
@@ -54,8 +55,8 @@ export default function MyPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-10 py-16">
-      {/* 프로필 카드 */}
-      <div className="card-elevated p-8 flex items-center justify-between mb-12">
+      {/* 프로필 카드 - 그림자 대신 헤어라인 테두리로 구분 (죽은 card-elevated 클래스 교체) */}
+      <div className="border border-pebble rounded-flat p-8 flex items-center justify-between mb-12">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-pebble/30 overflow-hidden flex items-center justify-center text-xs text-cool-ash">
             {profileImage ? (
@@ -81,27 +82,20 @@ export default function MyPage() {
         </div>
         <button
           onClick={() => navigate('/mypage/edit')}
-          className="rounded-pill border border-pebble text-deep-ink px-5 py-2 text-sm font-semibold"
+          className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-5 py-2 text-sm font-semibold"
         >
           정보 수정
         </button>
       </div>
 
       {/* 내가 만든 여행 */}
-      <div className="mb-16">
-        <div className="flex items-center justify-between border-b border-pebble pb-3 mb-6">
-          <h2 className="text-xl font-bold text-deep-ink">내가 만든 여행</h2>
-          <span className="text-sm text-cool-ash">카드를 눌러 수정하거나 삭제하세요</span>
-        </div>
-
+      <HorizontalCardScroller title="내가 만든 여행" subtitle="카드를 눌러 수정하거나 삭제하세요">
         {createdTravels.length === 0 && (
           <p className="text-sm text-cool-ash">아직 만든 여행이 없어요.</p>
         )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {createdTravels.map((travel) => (
+        {createdTravels.map((travel) => (
+          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
             <TravelCardBase
-              key={travel.id}
               name={travel.name}
               startDate={travel.startDate}
               endDate={travel.endDate}
@@ -109,72 +103,23 @@ export default function MyPage() {
               statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
               footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
-                    수정
-                  </button>
-                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
-                    삭제
-                  </button>
+                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
+                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
                 </div>
               }
             />
-          ))}
-        </div>
-      </div>
-
-      {/* 찜한 여행 - API 대기, 자리만 */}
-      {/* 찜한 여행 */}
-      <div className="mb-16">
-        <div className="flex items-center justify-between border-b border-pebble pb-3 mb-6">
-          <h2 className="text-xl font-bold text-deep-ink">찜한 여행</h2>
-          <span className="text-sm text-cool-ash">카드를 눌러 찜을 취소하세요</span>
-        </div>
-
-        {likedTravels.length === 0 && (
-          <p className="text-sm text-cool-ash">아직 찜한 여행이 없어요.</p>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {likedTravels.map((travel) => (
-            <TravelCardBase
-              imageUrl={travel.travelImage}
-              key={travel.id}
-              name={travel.name}
-              startDate={travel.startDate}
-              endDate={travel.endDate}
-              totalBudget={travel.totalBudget}
-              statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
-              footer={
-                <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
-                    수정
-                  </button>
-                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
-                    삭제
-                  </button>
-                </div>
-              }
-            />
-          ))}
-        </div>
-      </div>
-
+          </div>
+        ))}
+      </HorizontalCardScroller>
 
       {/* 리믹스한 여행 */}
-      <div className="mb-16">
-        <div className="flex items-center justify-between border-b border-pebble pb-3 mb-6">
-          <h2 className="text-xl font-bold text-deep-ink">리믹스한 여행</h2>
-          <span className="text-sm text-cool-ash">카드를 눌러 수정하거나 삭제하세요</span>
-        </div>
-
+      <HorizontalCardScroller title="리믹스한 여행" subtitle="카드를 눌러 수정하거나 삭제하세요">
         {remixedTravels.length === 0 && (
           <p className="text-sm text-cool-ash">아직 리믹스한 여행이 없어요.</p>
         )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {remixedTravels.map((travel) => (
+        {remixedTravels.map((travel) => (
+          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
             <TravelCardBase
-              key={travel.id}
               name={travel.name}
               startDate={travel.startDate}
               endDate={travel.endDate}
@@ -182,18 +127,37 @@ export default function MyPage() {
               statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
               footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble text-deep-ink px-4 py-1.5 text-xs font-semibold">
-                    수정
-                  </button>
-                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble text-cool-ash px-4 py-1.5 text-xs font-semibold">
-                    삭제
-                  </button>
+                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
+                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
                 </div>
               }
             />
-          ))}
-        </div>
-      </div>
+          </div>
+        ))}
+      </HorizontalCardScroller>
+
+      {/* 찜한 여행 */}
+      <HorizontalCardScroller title="찜한 여행" subtitle="카드를 눌러 찜을 취소하세요">
+        {likedTravels.length === 0 && (
+          <p className="text-sm text-cool-ash">아직 찜한 여행이 없어요.</p>
+        )}
+        {likedTravels.map((travel) => (
+          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
+            <TravelCardBase
+              name={travel.name}
+              startDate={travel.startDate}
+              endDate={travel.endDate}
+              totalBudget={travel.totalBudget}
+              statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
+              footer={
+                <div className="flex gap-2 border-t border-pebble pt-3">
+                  <button onClick={() => handleDelete(travel.id)} className="w-full rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">찜에서 삭제하기</button>
+                </div>
+              }
+            />
+          </div>
+        ))}
+      </HorizontalCardScroller>
     </div>
   )
 }
