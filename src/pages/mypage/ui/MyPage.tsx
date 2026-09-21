@@ -137,6 +137,7 @@ export default function MyPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {likedTravels.map((travel) => (
             <TravelCardBase
+              imageUrl={travel.travelImage}
               key={travel.id}
               name={travel.name}
               startDate={travel.startDate}
