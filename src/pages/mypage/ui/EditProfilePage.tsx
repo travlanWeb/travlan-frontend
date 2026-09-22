@@ -60,11 +60,16 @@ export default function EditProfilePage() {
             }
 
             const userId = getUserIdFromToken(accessToken)
+            
+            // 프리미엄 기준이 저렴 기준보다 작을 경우 스왑
+            const finalCheap = Math.min(cheapThreshold, premiumThreshold)
+            const finalPremium = Math.max(cheapThreshold, premiumThreshold)
+
             const response = await api.put(`/users/${userId}`, {
                 name,
                 profileImage: newProfileImage,
-                cheapThreshold,
-                premiumThreshold,
+                cheapThreshold: finalCheap,
+                premiumThreshold: finalPremium,
             })
 
             dispatch(updateProfile(response.data))
