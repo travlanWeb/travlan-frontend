@@ -67,7 +67,6 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
                             <input
                                 type="date"
                                 value={startDate}
-                                min={getTodayString()}
                                 onChange={(e) => {
                                     const newStart = e.target.value
                                     onChange(newStart, endDate && endDate >= newStart ? endDate : newStart)
@@ -78,8 +77,13 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
                             <input
                                 type="date"
                                 value={endDate}
-                                min={startDate || getTodayString()}
-                                onChange={(e) => onChange(startDate, e.target.value)}
+                                min={startDate || undefined}
+                                onChange={(e) => {
+                                    const newEnd = e.target.value
+                                    // 시작 날짜가 없는 상태에서 종료 날짜만 먼저 고르면
+                                    // 시작 날짜도 같이 채워서, "종료일만 있고 시작일 없는" 불완전한 상태를 방지
+                                    onChange(startDate || newEnd, newEnd)
+                                }}
                                 className="border border-pebble rounded-input px-3 py-2 text-sm outline-none focus:border-deep-ink flex-1"
                             />
                         </div>
