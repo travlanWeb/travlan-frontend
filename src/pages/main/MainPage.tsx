@@ -22,9 +22,14 @@ import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 import DateRangePicker from '../../shared/ui/DateRangePicker'
 import { Pencil } from 'lucide-react'
+import { useRef } from 'react'
 
 
 export default function MainPage() {
+
+  // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
+  // (state가 아니라 ref인 이유: 값이 바뀌어도 리렌더를 유발할 필요가 없기 때문)
+  const loadedTravelIdRef = useRef<string | undefined>(undefined)
 
   const places = usePlaces()
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
@@ -137,19 +142,16 @@ export default function MainPage() {
         setJustCopied(false)
         return
       }
-      // 이전 편집 내용 남아있을 경우 저장 관련 경고 메시지 추가
       const hasUnsavedDraft = name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
 
       if (hasUnsavedDraft) {
         const confirmLeave = confirm('저장하지 않은 변경사항이 있습니다. 계속하면 변경사항이 사라집니다. 계속하시겠습니까?')
         if (!confirmLeave) {
-          // 취소 시 이전 화면으로 돌아가기
           navigate(-1)
           return
         }
       }
 
-      // 신규 여행 시작 시 남아있는 데이터 초기화
       setName('')
       setStartDate('')
       setEndDate('')
@@ -160,19 +162,22 @@ export default function MainPage() {
       return
     }
 
+    // 이미 같은 travelId를 로드했다면 다시 서버에서 불러오지 않음
+    // (지도<->타임라인 왕복 시 재마운트되면서 로컬 미저장 변경사항을 덮어쓰는 걸 방지)
+    if (loadedTravelIdRef.current === travelId) {
+      return
+    }
 
     const fetchTravelForEdit = async () => {
       try {
         const response = await api.get(`/travels/${travelId}`)
         const travel = response.data
-        console.log('불러온 travel.bags:', travel.bags) // 추가
 
         setName(travel.name)
         setStartDate(travel.startDate ?? '')
         setEndDate(travel.endDate ?? '')
         setTotalBudget(travel.totalBudget)
 
-        // 여행가방 채우기
         clearBag()
         const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
           id: bag.placeId,
@@ -180,7 +185,7 @@ export default function MainPage() {
           name: bag.placeName,
           category: '',
           address: bag.address,
-          price: null,
+          price: bag.price ?? null,
           latitude: bag.latitude,
           longitude: bag.longitude,
           imgUrl: '',
@@ -189,7 +194,6 @@ export default function MainPage() {
         }))
         bagPlaces.forEach((place) => addBagItem(place))
 
-        // 일정 채우기
         dispatch(clearVisits())
         travel.visits.forEach((visit: any) => {
           dispatch(addVisit({
@@ -201,6 +205,9 @@ export default function MainPage() {
             endTime: visit.endTime.slice(0, 5),
           }))
         })
+
+        // 로드 완료 표시
+        loadedTravelIdRef.current = travelId
       } catch (error) {
         console.error('여행 정보 조회 실패', error)
       }
