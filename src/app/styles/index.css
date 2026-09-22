@@ -5,6 +5,11 @@
    여기 등록한 값은 bg-primary, text-primary, rounded-tag 같은
    유틸리티 클래스로 자동 생성됩니다. */
 
+html {
+  overflow-y: scroll;
+  /* 콘텐츠 높이에 상관없이 스크롤바 자리를 항상 확보해서 페이지 이동 시 폭이 안 흔들리게 함 */
+}
+
 
 @theme {
   /* ===== 색상: Primary ===== */
