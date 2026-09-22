@@ -295,12 +295,12 @@ export default function TimelinePage() {
 
                     {/* 중앙: Day 탭 + 타임라인 */}
                     <div className="flex-1 overflow-y-auto">
-                        <div className="flex gap-2 mb-4">
+                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 shrink-0">
                             {dayTabs.map((day) => (
                                 <button
                                     key={day}
                                     onClick={() => setSelectedDay(day)}
-                                    className={`px-5 py-2 text-sm font-semibold rounded-pill border ${selectedDay === day
+                                    className={`px-5 py-2 text-sm font-semibold rounded-pill border shrink-0 ${selectedDay === day
                                         ? 'bg-deep-ink text-pure-white border-deep-ink'
                                         : 'border-pebble text-cool-ash'
                                         }`}
