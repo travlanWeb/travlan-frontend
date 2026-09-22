@@ -1,4 +1,4 @@
-// import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../../app/store'
@@ -8,6 +8,7 @@ import { TRAVEL_STATUS } from '../../../entities/travel/model/travelStatus'
 import TravelCardBase from '../../../shared/ui/TravelCardBase'
 import HorizontalCardScroller from '../../../shared/ui/HorizontalCardScroller'
 import ProfileAvatar from '../../../shared/ui/ProfileAvatar'
+import TravelDetailModal from '../../../widgets/travel-detail-modal/ui/TravelDetailModal'
 
 
 export default function MyPage() {
@@ -16,6 +17,10 @@ export default function MyPage() {
   const name = useSelector((state: RootState) => state.auth.name)
   const profileImage = useSelector((state: RootState) => state.auth.profileImage)
   const myTravels = useMyTravels()
+
+  // 커뮤니티 페이지와 동일한 패턴 - 클릭한 카드의 id만 저장하면
+  // TravelDetailModal이 이 id로 상세 데이터를 알아서 조회해서 보여줌
+  const [selectedTravelId, setSelectedTravelId] = useState<number | null>(null)
 
   const createdTravels = myTravels.filter((t) => t.originalId === null)
   const likedTravels = myTravels.filter((t) => t.originalId !== null && !t.edited)
@@ -40,6 +45,14 @@ export default function MyPage() {
       console.error('여행 삭제 실패', error)
     }
   }
+
+  // 카드 안 버튼(수정/삭제) 클릭이 카드 자체의 클릭(모달 열기)까지 같이 발생하지 않도록
+  // 이벤트 버블링을 막아주는 헬퍼. 버튼 onClick에서 감싸서 사용
+  const stopAnd = (fn: () => void) => (e: React.MouseEvent) => {
+    e.stopPropagation()
+    fn()
+  }
+
 
   if (!isLoggedIn) {
     return (
@@ -90,7 +103,11 @@ export default function MyPage() {
           <p className="text-sm text-cool-ash">아직 만든 여행이 없어요.</p>
         )}
         {createdTravels.map((travel) => (
-          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
+          <div
+            key={travel.id}
+            className="w-[calc((100%-2rem)/3)] shrink-0 cursor-pointer"
+            onClick={() => setSelectedTravelId(travel.id)}
+          >
             <TravelCardBase
               imageUrl={travel.travelImage}
               name={travel.name}
@@ -100,13 +117,13 @@ export default function MyPage() {
               statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
               footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
-                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
+                  <button onClick={stopAnd(() => handleEdit(travel.id))} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
+                  <button onClick={stopAnd(() => handleDelete(travel.id))} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
                 </div>
               }
             />
           </div>
-        ))}
+        ))}Z
       </HorizontalCardScroller>
 
       {/* 리믹스한 여행 */}
@@ -115,7 +132,11 @@ export default function MyPage() {
           <p className="text-sm text-cool-ash">아직 리믹스한 여행이 없어요.</p>
         )}
         {remixedTravels.map((travel) => (
-          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
+          <div
+            key={travel.id}
+            className="w-[calc((100%-2rem)/3)] shrink-0 cursor-pointer"
+            onClick={() => setSelectedTravelId(travel.id)}
+          >
             <TravelCardBase
               imageUrl={travel.travelImage}
               name={travel.name}
@@ -125,8 +146,8 @@ export default function MyPage() {
               statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
               footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleEdit(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
-                  <button onClick={() => handleDelete(travel.id)} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
+                  <button onClick={stopAnd(() => handleEdit(travel.id))} className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-4 py-1.5 text-xs font-semibold">수정</button>
+                  <button onClick={stopAnd(() => handleDelete(travel.id))} className="rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">삭제</button>
                 </div>
               }
             />
@@ -140,7 +161,11 @@ export default function MyPage() {
           <p className="text-sm text-cool-ash">아직 찜한 여행이 없어요.</p>
         )}
         {likedTravels.map((travel) => (
-          <div key={travel.id} className="w-[calc((100%-2rem)/3)] shrink-0">
+          <div
+            key={travel.id}
+            className="w-[calc((100%-2rem)/3)] shrink-0 cursor-pointer"
+            onClick={() => setSelectedTravelId(travel.id)}
+          >
             <TravelCardBase
               imageUrl={travel.travelImage}
               name={travel.name}
@@ -150,13 +175,19 @@ export default function MyPage() {
               statusBadge={travel.status === TRAVEL_STATUS.DRAFT ? '임시저장' : undefined}
               footer={
                 <div className="flex gap-2 border-t border-pebble pt-3">
-                  <button onClick={() => handleDelete(travel.id)} className="w-full rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">찜에서 삭제하기</button>
+                  <button onClick={stopAnd(() => handleDelete(travel.id))} className="w-full rounded-pill border border-pebble bg-pure-white text-cool-ash px-4 py-1.5 text-xs font-semibold">찜에서 삭제하기</button>
                 </div>
               }
             />
           </div>
         ))}
       </HorizontalCardScroller>
+
+      <TravelDetailModal
+        travelId={selectedTravelId}
+        onClose={() => setSelectedTravelId(null)}
+        onNavigateToOriginal={(originalId) => setSelectedTravelId(originalId)}
+      />
     </div>
   )
 }
