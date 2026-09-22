@@ -32,6 +32,9 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     const [selectedDay, setSelectedDay] = useState(1)
     const [mapCenter] = useState({ lat: 35.8353, lng: 129.2107 }) // 지도 최초 위치만 담당 (이후 이동은 panTo가 처리)
 
+    const isLikingRef = useRef(false) // 찜하기 중복 클릭 방지용 - state 대신 ref를 쓰는 이유는
+    // setState는 리렌더를 기다려야 반영되는데, 그 사이 빠르게 여러 번 누르면 막히지 않기 때문‰
+
     const mapRef = useRef<kakao.maps.Map | null>(null) // 지도 인스턴스를 저장해서 panTo를 호출하기 위함
     const [kakaoLoading, kakaoError] = useKakaoLoader({
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
@@ -178,13 +181,16 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
     }
 
     const handleLike = async () => {
-        if (!detail) return
+        if (!detail || isLikingRef.current) return
+        isLikingRef.current = true
         try {
             await api.post('/travels/like', { travelId: detail.id })
             onClose()
             navigate('/mypage') // 마이페이지로 이동하는 게 좋을지...?
         } catch (error) {
             console.log('찜하기 실패', error)
+        } finally {
+            isLikingRef.current = false
         }
     }
 
