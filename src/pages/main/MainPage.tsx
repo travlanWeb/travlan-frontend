@@ -2,35 +2,31 @@
 // 여기서는 "지금 선택된 여행지가 무엇인지"를 이 페이지 안에서만 기억하면 되므로
 // (다른 페이지/컴포넌트가 공유할 필요 없음) Zustand가 아니라 useState로 충분함
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useParams, useLocation, useBlocker } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState } from '../../app/store'
 import type { Place } from '../../entities/place/model/types'
 import PlaceListItem from '../../entities/place/ui/PlaceListItem'
 import PlaceDetail from '../../entities/place/ui/PlaceDetail'
 import BagPanel from '../../widgets/bag-panel/BagPanel'
 import { useBagStore } from '../../entities/bag/model/useBagStore'
 import KakaoMap from '../../widgets/kakao-map/ui/KakaoMap'
-import { useEffect } from 'react'
 import { useTravelDraftStore } from '../../entities/travel/model/useTravelDraftStore'
 import { usePlaces } from '../../entities/place/model/usePlaces'
 import { CATEGORY_FILTERS } from '../../entities/place/model/categoryMap'
 import TravelNavTabs from '../../widgets/travel-nav-tabs/TravelNavTabs'
-import { useDispatch, useSelector } from 'react-redux'
-import type { RootState } from '../../app/store'
 import { api } from '../../shared/api/axiosInstance'
 import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 import DateRangePicker from '../../shared/ui/DateRangePicker'
 import { Pencil } from 'lucide-react'
 
-
-
 export default function MainPage() {
-
-
   // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
   // (state가 아니라 ref인 이유: 값이 바뀌어도 리렌더를 유발할 필요가 없기 때문)
   const loadedTravelIdRef = useRef<string | undefined>(undefined)
+
   const places = usePlaces()
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
 
@@ -40,33 +36,30 @@ export default function MainPage() {
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
   const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied } = useTravelDraftStore()
-  console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
-  // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
   const canProceedToTimeline = name && totalBudget // timeline 으로 넘길 수 있는지 판단하는 함수
 
   // navigate 파트
   const navigate = useNavigate() // navigate 에 페이지 이동 함수 담기
   const location = useLocation() // 타임라인 ->> 지도 버튼으로 돌아온 건지 확인용
+  const dispatch = useDispatch()
+
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null) // 컴포넌트가 화면에 그려질 때마다 React 내부에 값 하나 새로 등록/유지
   const bagItems = useBagStore((state) => state.items) // useBagStore 에서 items 만 가져옴, 다른 컴포넌트에서 addItem 호출해서 뭔가 추가되면 Zustand 가 자동 렌더링, bagItems가 자동 갱신됨 (구독 형태)
+  const clearBag = useBagStore((state) => state.clearBag)
+  const addBagItem = useBagStore((state) => state.addItem)
 
-  // 정보 수정 상태 useEffect
+  // 정보 수정 상태
   const [isEditingTravelInfo, setIsEditingTravelInfo] = useState(false)
 
-  // 장소 검색 기능 추가
+  // 장소 검색 기능
   const [searchQuery, setSearchQuery] = useState('')
-
-
 
   // formatDate 함수 선언
   const formatDate = (dateStr: string) => {
     const parts = dateStr.split('-')
     return `${parts[1]}.${parts[2]}`
   }
-
-
-
 
   // getDayCount 함수 선언
   const getDayCount = (start: string, end: string) => {
@@ -76,7 +69,6 @@ export default function MainPage() {
     const diffDays = diffMs / (1000 * 60 * 60 * 24)
     return diffDays + 1
   }
-
 
   const handleSendToTimeline = () => { // timeline 으로 이동하는 함수 정의
     navigate(`/timeline/${travelId}`)
@@ -118,11 +110,12 @@ export default function MainPage() {
       }
     }
   }, [blocker])
+
   // 가격 필터 적용
   const MAX_PLACE_PRICE = 100000
   const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PLACE_PRICE])
 
-  // 필터 기능 추가
+  // 카테고리 필터
   const [selectedCategory, setSelectedCategory] = useState('전체')
 
   const filteredPlaces = useMemo(() => {
@@ -136,7 +129,6 @@ export default function MainPage() {
       )
     }
 
-
     // 가격 필터 - price가 null(가격 미정)인 장소는 필터와 무관하게 항상 포함
     result = result.filter((place) => {
       if (place.price === null) return true
@@ -147,19 +139,11 @@ export default function MainPage() {
   }, [places, selectedCategory, searchQuery, priceRange])
 
   const placesForMap = useMemo(() => {
-    // const bagPlaceIds = new Set(bagItems.map((item) => item.id))
     const missingBagItems = bagItems.filter((item) => !filteredPlaces.some((p) => p.id === item.id))
     return [...filteredPlaces, ...missingBagItems]
   }, [filteredPlaces, bagItems])
 
-
-  const dispatch = useDispatch()
-  const clearBag = useBagStore((state) => state.clearBag)
-  const addBagItem = useBagStore((state) => state.addItem)
-
-
   // 예산 입력창 관련
-
   const handleBudgetInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '') // 숫자 아닌 문자 다 제거 (콤마 포함)
     const numericValue = rawValue === '' ? 0 : parseInt(rawValue, 10) // 앞의 0들은 parseInt가 자동으로 무시함
@@ -170,9 +154,7 @@ export default function MainPage() {
     setTotalBudget(totalBudget + amount)
   }
 
-
   // 여행 수정 관련
-
   useEffect(() => {
     if (isNewTravel) {
       if (justCopied) {
@@ -186,8 +168,6 @@ export default function MainPage() {
       if (location.state?.fromTimeline) {
         return
       }
-
-      const hasUnsavedDraft = name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
 
       if (hasUnsavedDraft) {
         const confirmLeave = confirm('저장하지 않은 변경사항이 있습니다. 계속하면 변경사항이 사라집니다. 계속하시겠습니까?')
@@ -217,7 +197,6 @@ export default function MainPage() {
       try {
         const response = await api.get(`/travels/${travelId}`)
         const travel = response.data
-        console.log('불러온 travel.bags:', travel.bags) // 추가
 
         setName(travel.name)
         setStartDate(travel.startDate ?? '')
@@ -264,10 +243,20 @@ export default function MainPage() {
     fetchTravelForEdit()
   }, [isNewTravel, travelId])
 
-
-
   // 지도 위에 있는 핀만 리스트로 전달하는 기능 (KakaoMap 에서 onBounds~ 로 가져옴)
   const [mapBounds, setMapBounds] = useState<kakao.maps.LatLngBounds | null>(null)
+
+  const [isBagOpen, setIsBagOpen] = useState(false)
+
+  // "상세보기" 버튼 전용 모달 상태 - selectedPlace(지도 포커스/카드 선택)와 분리
+  const [detailPlace, setDetailPlace] = useState<Place | null>(null)
+
+  // 목록 스크롤 컨테이너 - 마커 클릭으로 순서가 바뀌었을 때 맨 위로 스크롤하기 위함
+  const placeListRef = useRef<HTMLDivElement | null>(null)
+
+  // 지도 마커를 클릭했을 때만 그 장소를 목록 맨 앞으로 당기기 위한 상태
+  // (카드를 직접 클릭했을 때는 순서를 안 바꿔야 하므로 selectedPlace와 별도로 관리)
+  const [pinnedPlaceId, setPinnedPlaceId] = useState<number | null>(null)
 
   // 카테고리 걸러진 것 중에서 지도 범위 안에 있는 장소들만 걸러내기
   const visiblePlaces = mapBounds
@@ -277,13 +266,24 @@ export default function MainPage() {
     })
     : filteredPlaces
 
-  const [isBagOpen, setIsBagOpen] = useState(false)
-
-  // "상세보기" 버튼 전용 모달 상태 - selectedPlace(지도 포커스/카드 선택)와 분리
-  const [detailPlace, setDetailPlace] = useState<Place | null>(null)
+  // 마커로 클릭한 장소가 있으면 그 장소만 목록 맨 앞으로 당김 (나머지 순서는 그대로)
+  const sortedVisiblePlaces = useMemo(() => {
+    if (pinnedPlaceId === null) return visiblePlaces
+    const pinnedIndex = visiblePlaces.findIndex((place) => place.id === pinnedPlaceId)
+    if (pinnedIndex <= 0) return visiblePlaces // 이미 맨 앞이거나 현재 목록에 없으면 그대로 둠
+    const pinned = visiblePlaces[pinnedIndex]
+    const rest = visiblePlaces.filter((place) => place.id !== pinnedPlaceId)
+    return [pinned, ...rest]
+  }, [visiblePlaces, pinnedPlaceId])
 
   // 카드에 마우스 올렸을 때 지도 마커를 강조하기 위한 상태
   const [hoveredPlaceId, setHoveredPlaceId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (pinnedPlaceId !== null && placeListRef.current) {
+      placeListRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [pinnedPlaceId])
 
   // 비로그인 상태로 여행 만들기에 진입한 경우, 지도/장소 데이터를 그릴 필요 없이
   // 바로 로그인 유도 화면으로 대체 (MyPage와 동일한 패턴)
@@ -312,13 +312,17 @@ export default function MainPage() {
 
               {isEditingTravelInfo ? (
                 <>
-                  <input
-                    placeholder='여행 제목을 입력하세요.'
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="border border-pebble rounded-input px-2 py-1 text-xs outline-none focus:border-deep-ink focus:ring-0 w-40"
-                  />
+                  <div className="flex flex-col">
+                    <input
+                      placeholder='여행 제목을 입력하세요.'
+                      type="text"
+                      value={name}
+                      maxLength={30}
+                      onChange={(e) => setName(e.target.value)}
+                      className="border border-pebble rounded-input px-2 py-1 text-xs outline-none focus:border-deep-ink focus:ring-0 w-40"
+                    />
+                    <span className="text-[10px] text-cool-ash mt-0.5 text-right">{name.length}/30</span>
+                  </div>
                   <DateRangePicker
                     startDate={startDate}
                     endDate={endDate}
@@ -412,7 +416,10 @@ export default function MainPage() {
           <div className="flex-[1.2] bg-pure-white rounded-flat overflow-hidden h-full">
             <KakaoMap
               places={placesForMap}
-              onMarkerClick={setSelectedPlace}
+              onMarkerClick={(place) => {
+                setSelectedPlace(place) // 카드 하이라이트 + 지도 포커스는 그대로 유지
+                setPinnedPlaceId(place.id) // 마커로 클릭한 장소를 목록 맨 앞으로 당김
+              }}
               onBoundsChange={setMapBounds}
               moveToPlace={selectedPlace}
               selectedPlaceId={selectedPlace?.id ?? null}
@@ -421,12 +428,12 @@ export default function MainPage() {
           </div>
 
           {/* 2단: 카드 그리드 - 남는 폭 전부 사용 */}
-          <div className="flex-1 bg-pure-white rounded-flat p-4 h-full overflow-y-auto scrollbar-thin">
+          <div ref={placeListRef} className="flex-1 bg-pure-white rounded-flat p-4 h-full overflow-y-auto scrollbar-thin">
             <h2 className="text-deep-ink font-bold mb-3">
-              여행지 목록 <span className="text-cool-ash font-normal">{visiblePlaces.length}곳</span>
+              여행지 목록 <span className="text-cool-ash font-normal">{sortedVisiblePlaces.length}곳</span>
             </h2>
             <div className="grid grid-cols-2 gap-6">
-              {visiblePlaces.map((place) => (
+              {sortedVisiblePlaces.map((place) => (
                 <PlaceListItem
                   key={place.id}
                   place={place}
