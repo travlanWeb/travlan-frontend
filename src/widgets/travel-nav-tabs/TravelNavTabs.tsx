@@ -14,7 +14,7 @@ export default function TravelNavTabs({ disableTimeline }: TravelNavTabsProps) {
     return (
         <div className="flex gap-2">
             <button
-                onClick={() => navigate(`/travels/${travelId}/map`)}
+                onClick={() => navigate(`/travels/${travelId}/map`, { state: { fromTimeline: true } })}
                 className={`px-4 py-1.5 text-sm font-semibold rounded-pill border ${isMapPage
                         ? 'bg-deep-ink text-pure-white border-deep-ink'
                         : 'border-pebble text-cool-ash'

@@ -2,8 +2,8 @@
 // 여기서는 "지금 선택된 여행지가 무엇인지"를 이 페이지 안에서만 기억하면 되므로
 // (다른 페이지/컴포넌트가 공유할 필요 없음) Zustand가 아니라 useState로 충분함
 
-import { useState, useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useMemo, useRef } from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import type { Place } from '../../entities/place/model/types'
 import PlaceListItem from '../../entities/place/ui/PlaceListItem'
 import PlaceDetail from '../../entities/place/ui/PlaceDetail'
@@ -22,15 +22,14 @@ import { clearVisits, addVisit } from '../../entities/travel/model/visitSlice'
 import RangeSlider from '../../shared/ui/RangeSlider'
 import DateRangePicker from '../../shared/ui/DateRangePicker'
 import { Pencil } from 'lucide-react'
-import { useRef } from 'react'
 
 
 export default function MainPage() {
+  
 
   // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
   // (state가 아니라 ref인 이유: 값이 바뀌어도 리렌더를 유발할 필요가 없기 때문)
   const loadedTravelIdRef = useRef<string | undefined>(undefined)
-
   const places = usePlaces()
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
 
@@ -47,6 +46,7 @@ export default function MainPage() {
 
   // navigate 파트
   const navigate = useNavigate() // navigate 에 페이지 이동 함수 담기
+  const location = useLocation() // 타임라인 ->> 지도 버튼으로 돌아온 건지 확인용
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null) // 컴포넌트가 화면에 그려질 때마다 React 내부에 값 하나 새로 등록/유지
   const bagItems = useBagStore((state) => state.items) // useBagStore 에서 items 만 가져옴, 다른 컴포넌트에서 addItem 호출해서 뭔가 추가되면 Zustand 가 자동 렌더링, bagItems가 자동 갱신됨 (구독 형태)
 
@@ -142,6 +142,14 @@ export default function MainPage() {
         setJustCopied(false)
         return
       }
+
+      // 타임라인 페이지에서 "지도" 버튼을 눌러 돌아온 것이면
+      // 새로 시작하는 게 아니라 같은 작성 중인 여행을 계속 보는 것이므로
+      // 아래 초기화 로직을 아예 타지 않고 그대로 둠 (데이터 유지)
+      if (location.state?.fromTimeline) {
+        return
+      }
+
       const hasUnsavedDraft = name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
 
       if (hasUnsavedDraft) {
@@ -172,12 +180,14 @@ export default function MainPage() {
       try {
         const response = await api.get(`/travels/${travelId}`)
         const travel = response.data
+        console.log('불러온 travel.bags:', travel.bags) // 추가
 
         setName(travel.name)
         setStartDate(travel.startDate ?? '')
         setEndDate(travel.endDate ?? '')
         setTotalBudget(travel.totalBudget)
 
+        // 여행가방 채우기
         clearBag()
         const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
           id: bag.placeId,
@@ -194,6 +204,7 @@ export default function MainPage() {
         }))
         bagPlaces.forEach((place) => addBagItem(place))
 
+        // 일정 채우기
         dispatch(clearVisits())
         travel.visits.forEach((visit: any) => {
           dispatch(addVisit({
@@ -206,7 +217,7 @@ export default function MainPage() {
           }))
         })
 
-        // 로드 완료 표시
+        // 이 travelId는 이미 불러왔다고 표시
         loadedTravelIdRef.current = travelId
       } catch (error) {
         console.error('여행 정보 조회 실패', error)
