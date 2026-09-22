@@ -3,7 +3,7 @@
 // (다른 페이지/컴포넌트가 공유할 필요 없음) Zustand가 아니라 useState로 충분함
 
 import { useState, useMemo, useRef } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useNavigate, useParams, useLocation, useBlocker } from 'react-router-dom'
 import type { Place } from '../../entities/place/model/types'
 import PlaceListItem from '../../entities/place/ui/PlaceListItem'
 import PlaceDetail from '../../entities/place/ui/PlaceDetail'
@@ -24,8 +24,9 @@ import DateRangePicker from '../../shared/ui/DateRangePicker'
 import { Pencil } from 'lucide-react'
 
 
+
 export default function MainPage() {
-  
+
 
   // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
   // (state가 아니라 ref인 이유: 값이 바뀌어도 리렌더를 유발할 필요가 없기 때문)
@@ -81,6 +82,42 @@ export default function MainPage() {
     navigate(`/timeline/${travelId}`)
   }
 
+  // 저장 안 된 변경사항이 있는지 - 새 여행 작성 중일 때만 해당
+  // (기존 여행 수정 중 미저장 감지는 원본 데이터와 비교해야 해서 범위가 커지므로 이번엔 신규 작성만 커버)
+  const hasUnsavedDraft = isNewTravel && Boolean(
+    name || startDate || endDate || totalBudget > 0 || bagItems.length > 0
+  )
+
+  // 실제로 다른 페이지로 "이동하려는 시점"을 가로채는 가드
+  // - 타임라인으로 보내는 정상 흐름(/timeline/...)은 막지 않음
+  // - 그 외 경로로 이동 시도할 때만, 미저장 변경사항이 있으면 confirm 띄움
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedDraft &&
+      currentLocation.pathname !== nextLocation.pathname &&
+      !nextLocation.pathname.startsWith('/timeline')
+  )
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmLeave = confirm('저장하지 않은 변경사항이 있습니다. 계속하면 변경사항이 사라집니다. 계속하시겠습니까?')
+      if (confirmLeave) {
+        // 나가기로 확정했으니 미저장 초안 데이터를 실제로 지움
+        // (안 지우면 나중에 "여행 만들기"로 다시 들어왔을 때 예전 초안이 그대로 남아있어서
+        //  isNewTravel 마운트 시점의 별도 confirm이 또 뜨는 문제가 생김)
+        setName('')
+        setStartDate('')
+        setEndDate('')
+        setTotalBudget(0)
+        setOriginalId(null)
+        clearBag()
+        dispatch(clearVisits())
+        blocker.proceed()
+      } else {
+        blocker.reset()
+      }
+    }
+  }, [blocker])
   // 가격 필터 적용
   const MAX_PLACE_PRICE = 100000
   const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PLACE_PRICE])
