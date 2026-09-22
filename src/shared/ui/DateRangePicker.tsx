@@ -67,6 +67,7 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
                             <input
                                 type="date"
                                 value={startDate}
+                                min={getTodayString()}
                                 onChange={(e) => {
                                     const newStart = e.target.value
                                     onChange(newStart, endDate && endDate >= newStart ? endDate : newStart)
@@ -77,7 +78,7 @@ export default function DateRangePicker({ startDate, endDate, onChange }: DateRa
                             <input
                                 type="date"
                                 value={endDate}
-                                min={startDate || undefined}
+                                min={startDate || getTodayString()}
                                 onChange={(e) => onChange(startDate, e.target.value)}
                                 className="border border-pebble rounded-input px-3 py-2 text-sm outline-none focus:border-deep-ink flex-1"
                             />
