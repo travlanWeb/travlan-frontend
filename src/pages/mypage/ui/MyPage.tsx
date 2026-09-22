@@ -123,7 +123,7 @@ export default function MyPage() {
               }
             />
           </div>
-        ))}Z
+        ))}
       </HorizontalCardScroller>
 
       {/* 리믹스한 여행 */}
