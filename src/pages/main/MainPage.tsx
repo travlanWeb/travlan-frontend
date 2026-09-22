@@ -23,6 +23,12 @@ import DateRangePicker from '../../shared/ui/DateRangePicker'
 import { Pencil } from 'lucide-react'
 
 export default function MainPage() {
+
+  // 스크롤 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
   // (state가 아니라 ref인 이유: 값이 바뀌어도 리렌더를 유발할 필요가 없기 때문)
   const loadedTravelIdRef = useRef<string | undefined>(undefined)
@@ -35,7 +41,9 @@ export default function MainPage() {
   const isNewTravel = travelId === 'new' // travel id 가 new 이면 newTravel 확인
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
-  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied } = useTravelDraftStore()
+    
+  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied, setTravelImage } = useTravelDraftStore()
+  console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId)
 
   const canProceedToTimeline = name && totalBudget // timeline 으로 넘길 수 있는지 판단하는 함수
 
@@ -187,9 +195,8 @@ export default function MainPage() {
       return
     }
 
-    // 이미 같은 travelId를 로드했다면 다시 서버에서 불러오지 않음
-    // (지도<->타임라인 왕복 시 재마운트되면서 로컬 미저장 변경사항을 덮어쓰는 걸 방지)
-    if (loadedTravelIdRef.current === travelId) {
+    // 이미 같은 travelId를 로드했거나 장소가 아직 로딩되지 않았다면 대기
+    if (loadedTravelIdRef.current === travelId || places.length === 0) {
       return
     }
 
@@ -202,22 +209,27 @@ export default function MainPage() {
         setStartDate(travel.startDate ?? '')
         setEndDate(travel.endDate ?? '')
         setTotalBudget(travel.totalBudget)
+        setTravelImage(travel.travelImage ?? '')
 
         // 여행가방 채우기
         clearBag()
-        const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
-          id: bag.placeId,
-          apiId: '',
-          name: bag.placeName,
-          category: '',
-          address: bag.address,
-          price: bag.price ?? null,
-          latitude: bag.latitude,
-          longitude: bag.longitude,
-          imgUrl: '',
-          tel: '',
-          overview: '',
-        }))
+        const bagPlaces: Place[] = travel.bags.map((bag: any) => {
+          // 캐시된 장소 목록에서 가격 정보 찾기 시도
+          const cachedPlace = places.find((p) => p.id === bag.placeId)
+          return {
+            id: bag.placeId,
+            apiId: '',
+            name: bag.placeName,
+            category: '',
+            address: bag.address,
+            price: bag.price ?? cachedPlace?.price ?? null,
+            latitude: bag.latitude,
+            longitude: bag.longitude,
+            imgUrl: '',
+            tel: '',
+            overview: '',
+          }
+        })
         bagPlaces.forEach((place) => addBagItem(place))
 
         // 일정 채우기
@@ -241,7 +253,7 @@ export default function MainPage() {
     }
 
     fetchTravelForEdit()
-  }, [isNewTravel, travelId])
+  }, [isNewTravel, travelId, places]) // places 의존성 추가
 
   // 지도 위에 있는 핀만 리스트로 전달하는 기능 (KakaoMap 에서 onBounds~ 로 가져옴)
   const [mapBounds, setMapBounds] = useState<kakao.maps.LatLngBounds | null>(null)

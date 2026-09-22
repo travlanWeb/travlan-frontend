@@ -25,11 +25,11 @@ const visitSlice = createSlice({
 
         updateVisit: (
             state,
-            action: PayloadAction<{ placeId: number; field: keyof Visit; value: string | number }>
+            action: PayloadAction<{ placeId: number; day: number; field: keyof Visit; value: string | number }>
         ) => {
-            const visit = state.items.find((item) => item.placeId === action.payload.placeId)
+            const visit = state.items.find((item) => item.placeId === action.payload.placeId && item.day === action.payload.day)
             if (visit) {
-                visit[action.payload.field] = action.payload.value as never // 이 부분은 내가 책임질 테니 타입 체크를 넘어가라
+                visit[action.payload.field] = action.payload.value as never
             }
         },
 

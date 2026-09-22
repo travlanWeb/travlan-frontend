@@ -39,17 +39,33 @@ export default function TimelinePage() {
     const [draggedVisitId, setDraggedVisitId] = useState<number | null>(null)
     const [selectedBagCategory, setSelectedBagCategory] = useState('전체')
 
-    // 여행 사진 업로드
+    // 대표 사진 업로드 시 지켜야 하는 최대 용량 (S3 제한 10MB에 맞춤)
+    const MAX_IMAGE_SIZE_MB = 10
+
+    // 여행 사진 업로드 - 사진 용량 안내 추가
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
+
+        // 용량 초과 시 업로드 자체를 시도하지 않고 바로 안내
+        // (S3 업로드 제한이 10MB라 그보다 큰 파일은 서버에서 조용히 실패했었음)
+        const fileSizeMB = file.size / (1024 * 1024)
+        if (fileSizeMB > MAX_IMAGE_SIZE_MB) {
+            alert(`이미지 용량은 ${MAX_IMAGE_SIZE_MB}MB 이하만 업로드할 수 있어요. (선택한 파일: ${fileSizeMB.toFixed(1)}MB)`)
+            e.target.value = '' // 같은 파일을 다시 선택해도 onChange가 또 발생하도록 초기화
+            return
+        }
+
         try {
             const url = await uploadImage(file)
             setTravelImage(url)
         } catch (error) {
             console.error('여행 사진 업로드 실패', error)
+            alert('사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.')
         }
     }
+
+
 
     // 기본값 계산 함수
     const getDefaultTravelImage = () => {
@@ -91,6 +107,9 @@ export default function TimelinePage() {
     const isAddedOnOtherDay = (placeId: number) =>
         visits.some((v) => v.placeId === placeId && v.day !== selectedDay)
 
+
+
+
     // 일정에 추가 / 빼기 토글
     const toggleAddToSchedule = (placeId: number) => {
         const place = bagItems.find((item) => item.id === placeId)
@@ -111,6 +130,9 @@ export default function TimelinePage() {
         }
     }
 
+
+
+
     // 총 사용 금액 (모든 day의 visits cost 합산)
     const usedAmount = visits.reduce((sum, v) => sum + (v.cost || 0), 0)
     const remainingAmount = totalBudget - usedAmount
@@ -123,6 +145,10 @@ export default function TimelinePage() {
         mapRef.current.panTo(position)
     }
 
+
+
+
+
     // 저장 함수 - endpoint가 아니라 status(DRAFT/COMPLETED)를 받아서 /travels 하나로 통일
     const handleSave = async (status: string) => {
         if (!accessToken) return
@@ -133,6 +159,8 @@ export default function TimelinePage() {
             startTime: visit.startTime ? visit.startTime + ':00' : '00:00:00',
             endTime: visit.endTime ? visit.endTime + ':00' : '00:00:00',
         }))
+
+
 
         const finalTravelImage = travelImage || getDefaultTravelImage() // 추가
 
@@ -152,6 +180,10 @@ export default function TimelinePage() {
         }
     }
 
+
+
+
+
     // 지도에 찍을 좌표들 - 선택된 Day의 visitOrder 순서대로
     const timelinePlaces = visitsForSelectedDay
         .map((visit) => bagItems.find((item) => item.id === visit.placeId))
@@ -169,6 +201,9 @@ export default function TimelinePage() {
     const isOverBudget = usedAmount > totalBudget
 
 
+
+
+
     // 순서 바꾸는 함수 추가
     const handleReorder = (targetPlaceId: number) => {
         if (draggedVisitId === null || draggedVisitId === targetPlaceId) return
@@ -178,11 +213,15 @@ export default function TimelinePage() {
         if (!draggedVisit || !targetVisit) return
 
         // 두 항목의 visitOrder를 서로 교환
-        dispatch(updateVisit({ placeId: draggedVisit.placeId, field: 'visitOrder', value: targetVisit.visitOrder }))
-        dispatch(updateVisit({ placeId: targetVisit.placeId, field: 'visitOrder', value: draggedVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: draggedVisit.placeId, day: selectedDay, field: 'visitOrder', value: targetVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: targetVisit.placeId, day: selectedDay, field: 'visitOrder', value: draggedVisit.visitOrder }))
 
         setDraggedVisitId(null)
     }
+
+
+
+
 
     // 타임라인 페이지의 여행가방에서도 카테고리 별로 구분하여 볼 수 있도록 구현
 
@@ -295,12 +334,12 @@ export default function TimelinePage() {
 
                     {/* 중앙: Day 탭 + 타임라인 */}
                     <div className="flex-1 overflow-y-auto">
-                        <div className="flex gap-2 mb-4">
+                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 shrink-0">
                             {dayTabs.map((day) => (
                                 <button
                                     key={day}
                                     onClick={() => setSelectedDay(day)}
-                                    className={`px-5 py-2 text-sm font-semibold rounded-pill border ${selectedDay === day
+                                    className={`px-5 py-2 text-sm font-semibold rounded-pill border shrink-0 ${selectedDay === day
                                         ? 'bg-deep-ink text-pure-white border-deep-ink'
                                         : 'border-pebble text-cool-ash'
                                         }`}
@@ -359,12 +398,12 @@ export default function TimelinePage() {
                                                     value={visit.startTime}
                                                     onChange={(e) => {
                                                         const newStartTime = e.target.value
-                                                        dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: newStartTime }))
+                                                        dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'startTime', value: newStartTime }))
 
                                                         const duration = CATEGORY_DURATION_MINUTES[place.category]
                                                         if (duration !== null && duration !== undefined) {
                                                             const newEndTime = addMinutesToTime(newStartTime, duration)
-                                                            dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
+                                                            dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'endTime', value: newEndTime }))
                                                         }
                                                     }}
                                                     className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
@@ -377,7 +416,7 @@ export default function TimelinePage() {
                                                 <span className="text-sm text-cool-ash">~</span>
                                                 <select
                                                     value={visit.endTime}
-                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
+                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'endTime', value: e.target.value }))}
                                                     className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                                 >
                                                     <option value="">종료 시간</option>
@@ -402,7 +441,7 @@ export default function TimelinePage() {
                                                 <input
                                                     type="number"
                                                     value={visit.cost}
-                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
+                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'cost', value: Number(e.target.value) }))}
                                                     className="border border-pebble rounded-input px-2 py-1 text-xs w-24 outline-none focus:border-deep-ink focus:ring-0"
                                                 />
                                             </div>
