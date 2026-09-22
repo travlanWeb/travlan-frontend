@@ -71,6 +71,7 @@ export interface TravelDetail {
   originalId: number | null
   totalBudget: number
   status: string
+  edited: boolean
   startDate: string
   endDate: string
   updatedAt: string
