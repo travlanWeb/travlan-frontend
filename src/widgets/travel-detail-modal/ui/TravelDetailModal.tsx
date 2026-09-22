@@ -116,7 +116,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
             name: bag.placeName,
             category: '',
             address: bag.address,
-            price: null,
+            price: (bag as any).price ?? null, // Assuming price might be in the bag object
             latitude: bag.latitude,
             longitude: bag.longitude,
             imgUrl: '',

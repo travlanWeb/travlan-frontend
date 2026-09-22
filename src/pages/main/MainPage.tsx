@@ -207,9 +207,8 @@ export default function MainPage() {
       return
     }
 
-    // 이미 같은 travelId를 로드했다면 다시 서버에서 불러오지 않음
-    // (지도<->타임라인 왕복 시 재마운트되면서 로컬 미저장 변경사항을 덮어쓰는 걸 방지)
-    if (loadedTravelIdRef.current === travelId) {
+    // 이미 같은 travelId를 로드했거나 장소가 아직 로딩되지 않았다면 대기
+    if (loadedTravelIdRef.current === travelId || places.length === 0) {
       return
     }
 
@@ -227,19 +226,23 @@ export default function MainPage() {
 
         // 여행가방 채우기
         clearBag()
-        const bagPlaces: Place[] = travel.bags.map((bag: any) => ({
-          id: bag.placeId,
-          apiId: '',
-          name: bag.placeName,
-          category: '',
-          address: bag.address,
-          price: bag.price ?? null,
-          latitude: bag.latitude,
-          longitude: bag.longitude,
-          imgUrl: '',
-          tel: '',
-          overview: '',
-        }))
+        const bagPlaces: Place[] = travel.bags.map((bag: any) => {
+          // 캐시된 장소 목록에서 가격 정보 찾기 시도
+          const cachedPlace = places.find((p) => p.id === bag.placeId)
+          return {
+            id: bag.placeId,
+            apiId: '',
+            name: bag.placeName,
+            category: '',
+            address: bag.address,
+            price: bag.price ?? cachedPlace?.price ?? null,
+            latitude: bag.latitude,
+            longitude: bag.longitude,
+            imgUrl: '',
+            tel: '',
+            overview: '',
+          }
+        })
         bagPlaces.forEach((place) => addBagItem(place))
 
         // 일정 채우기
@@ -263,7 +266,7 @@ export default function MainPage() {
     }
 
     fetchTravelForEdit()
-  }, [isNewTravel, travelId])
+  }, [isNewTravel, travelId, places]) // places 의존성 추가
 
 
 
