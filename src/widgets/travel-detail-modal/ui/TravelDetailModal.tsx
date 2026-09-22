@@ -10,7 +10,9 @@ import { Map, CustomOverlayMap, Polyline, useKakaoLoader } from 'react-kakao-map
 import { Car } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState } from '../../../app/store'
+import { getUserIdFromToken } from '../../../entities/auth/model/getUserId'
 import { useTravelDraftStore } from '../../../entities/travel/model/useTravelDraftStore'
 import { useBagStore } from '../../../entities/bag/model/useBagStore'
 import { addVisit, clearVisits } from '../../../entities/travel/model/visitSlice'
@@ -43,6 +45,8 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const accessToken = useSelector((state: RootState) => state.auth.accessToken)
+
     const setName = useTravelDraftStore((state) => state.setName)
     const setStartDate = useTravelDraftStore((state) => state.setStartDate)
     const setEndDate = useTravelDraftStore((state) => state.setEndDate)
@@ -131,6 +135,17 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
 
     const getLegAfter = (visitId: number) =>
         currentDayRoute?.legs.find((leg) => leg.fromVisitId === visitId)
+
+    // 이 여행이 지금 로그인한 내 소유인지 확인
+    // (주의: "찜한 여행"도 백엔드 상 내 계정으로 복사되어 저장되므로 userId만으로는 구분 안 됨)
+    const currentUserId = accessToken ? getUserIdFromToken(accessToken) : null
+    const isMine = detail !== null && currentUserId === detail.userId
+    // 찜만 하고 아직 리믹스(수정)는 안 한 상태 - 아직은 "타인의 여행"처럼 다뤄서
+    // 찜하기/복사해서 수정하기 버튼을 그대로 노출함
+    const isUnedittedLikedCopy = detail !== null && detail.originalId !== null && !detail.edited
+    // 내가 만든 여행이거나, 이미 리믹스해서 수정까지 완료한 내 여행이면
+    // 찜하기/복사해서 수정하기 버튼이 필요 없음 (수정은 마이페이지의 "수정" 버튼으로 함)
+    const showActionButtons = !isMine || isUnedittedLikedCopy
 
     // Day가 바뀌면 그 날의 첫 장소로 부드럽게 이동
     useEffect(() => {
@@ -358,24 +373,26 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                         </div>
 
                         {/* 하단 버튼 */}
-                        <div className="border-t border-pebble px-8 py-5 shrink-0 flex gap-3">
-                            <button
-                                type="button"
-                                onClick={handleLike}
-                                className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                            >
-                                찜하기
-                            </button>
-                            {/* 이 화면의 핵심 CTA라 clay-ember 사용. 텍스트는 흰색 대비(3.13:1)가 기준 미달이라
-                                deep-ink로 씀(대비 6.36:1) - 지난 라운드에 확정한 CTA 색 조합 규칙 */}
-                            <button
-                                type="button"
-                                onClick={handleCopyToMyTravel}
-                                className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                            >
-                                수정해서 내 여행으로 저장
-                            </button>
-                        </div>
+                        {showActionButtons && (
+                            <div className="border-t border-pebble px-8 py-5 shrink-0 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={handleLike}
+                                    className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                                >
+                                    찜하기
+                                </button>
+                                {/* 이 화면의 핵심 CTA라 clay-ember 사용. 텍스트는 흰색 대비(3.13:1)가 기준 미달이라
+                                    deep-ink로 씀(대비 6.36:1) - 지난 라운드에 확정한 CTA 색 조합 규칙 */}
+                                <button
+                                    type="button"
+                                    onClick={handleCopyToMyTravel}
+                                    className="rounded-pill bg-clay-ember text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                                >
+                                    수정해서 내 여행으로 저장
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
