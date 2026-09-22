@@ -39,7 +39,7 @@ export default function MainPage() {
   const isNewTravel = travelId === 'new' // travel id 가 new 이면 newTravel 확인
 
   // useTravelDraftStore 생성하여 위 코드 대체함 -> 여러 줄 코드 구조분해할당으로 한 줄로 대체함
-  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied } = useTravelDraftStore()
+  const { name, startDate, endDate, totalBudget, setName, setStartDate, setEndDate, setTotalBudget, setOriginalId, justCopied, setJustCopied, setTravelImage } = useTravelDraftStore()
   console.log('MainPage 진입 시 originalId:', useTravelDraftStore.getState().originalId) // 추가
 
   // const isFormComplete = name && startDate && endDate && totalBudget // isFormCompleted 일 때만 타임라인으로 넘길 수 있도록 해야 함
@@ -223,6 +223,7 @@ export default function MainPage() {
         setStartDate(travel.startDate ?? '')
         setEndDate(travel.endDate ?? '')
         setTotalBudget(travel.totalBudget)
+        setTravelImage(travel.travelImage ?? '')
 
         // 여행가방 채우기
         clearBag()
@@ -312,13 +313,17 @@ export default function MainPage() {
 
               {isEditingTravelInfo ? (
                 <>
-                  <input
-                    placeholder='여행 제목을 입력하세요.'
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="border border-pebble rounded-input px-2 py-1 text-xs outline-none focus:border-deep-ink focus:ring-0 w-40"
-                  />
+                  <div className="flex flex-col">
+                    <input
+                      placeholder='여행 제목을 입력하세요.'
+                      type="text"
+                      value={name}
+                      maxLength={30}
+                      onChange={(e) => setName(e.target.value)}
+                      className="border border-pebble rounded-input px-2 py-1 text-xs outline-none focus:border-deep-ink focus:ring-0 w-40"
+                    />
+                    <span className="text-[10px] text-cool-ash mt-0.5 text-right">{name.length}/30</span>
+                  </div>
                   <DateRangePicker
                     startDate={startDate}
                     endDate={endDate}
