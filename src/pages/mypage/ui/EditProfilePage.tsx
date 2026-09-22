@@ -21,9 +21,8 @@ export default function EditProfilePage() {
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState('')
 
-    // 개인별 커스텀 가격 티어
+    // 개인별 커스텀 가격 티어 (저렴 / 프리미엄 두 기준만 존재 - normalThreshold는 백엔드에서 제거됨)
     const [cheapThreshold, setCheapThreshold] = useState(30)
-    const [normalThreshold, setNormalThreshold] = useState(60)
     const [premiumThreshold, setPremiumThreshold] = useState(100)
 
     useEffect(() => {
@@ -65,7 +64,6 @@ export default function EditProfilePage() {
                 name,
                 profileImage: newProfileImage,
                 cheapThreshold,
-                normalThreshold,
                 premiumThreshold,
             })
 
@@ -110,16 +108,6 @@ export default function EditProfilePage() {
                         type="number"
                         value={cheapThreshold}
                         onChange={(e) => setCheapThreshold(Number(e.target.value))}
-                        className="border border-pebble rounded-input px-3 py-2 text-sm flex-1 outline-none focus:border-deep-ink focus:ring-0"
-                    />
-                    <span className="text-sm text-cool-ash shrink-0">만원 이하</span>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-deep-ink w-20 shrink-0">일반 기준</span>
-                    <input
-                        type="number"
-                        value={normalThreshold}
-                        onChange={(e) => setNormalThreshold(Number(e.target.value))}
                         className="border border-pebble rounded-input px-3 py-2 text-sm flex-1 outline-none focus:border-deep-ink focus:ring-0"
                     />
                     <span className="text-sm text-cool-ash shrink-0">만원 이하</span>
