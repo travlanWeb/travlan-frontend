@@ -26,6 +26,11 @@ import { Pencil } from 'lucide-react'
 
 
 export default function MainPage() {
+  // 스크롤 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
 
 
   // travelId 별로 이미 서버에서 불러왔는지 추적하는 ref
