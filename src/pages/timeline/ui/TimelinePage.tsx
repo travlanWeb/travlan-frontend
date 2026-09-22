@@ -178,8 +178,8 @@ export default function TimelinePage() {
         if (!draggedVisit || !targetVisit) return
 
         // 두 항목의 visitOrder를 서로 교환
-        dispatch(updateVisit({ placeId: draggedVisit.placeId, field: 'visitOrder', value: targetVisit.visitOrder }))
-        dispatch(updateVisit({ placeId: targetVisit.placeId, field: 'visitOrder', value: draggedVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: draggedVisit.placeId, day: selectedDay, field: 'visitOrder', value: targetVisit.visitOrder }))
+        dispatch(updateVisit({ placeId: targetVisit.placeId, day: selectedDay, field: 'visitOrder', value: draggedVisit.visitOrder }))
 
         setDraggedVisitId(null)
     }
@@ -359,12 +359,12 @@ export default function TimelinePage() {
                                                     value={visit.startTime}
                                                     onChange={(e) => {
                                                         const newStartTime = e.target.value
-                                                        dispatch(updateVisit({ placeId: place.id, field: 'startTime', value: newStartTime }))
+                                                        dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'startTime', value: newStartTime }))
 
                                                         const duration = CATEGORY_DURATION_MINUTES[place.category]
                                                         if (duration !== null && duration !== undefined) {
                                                             const newEndTime = addMinutesToTime(newStartTime, duration)
-                                                            dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: newEndTime }))
+                                                            dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'endTime', value: newEndTime }))
                                                         }
                                                     }}
                                                     className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
@@ -377,7 +377,7 @@ export default function TimelinePage() {
                                                 <span className="text-sm text-cool-ash">~</span>
                                                 <select
                                                     value={visit.endTime}
-                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'endTime', value: e.target.value }))}
+                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'endTime', value: e.target.value }))}
                                                     className="border border-pebble rounded-input px-2 py-1 text-sm text-cool-ash outline-none focus:border-deep-ink focus:ring-0"
                                                 >
                                                     <option value="">종료 시간</option>
@@ -402,7 +402,7 @@ export default function TimelinePage() {
                                                 <input
                                                     type="number"
                                                     value={visit.cost}
-                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, field: 'cost', value: Number(e.target.value) }))}
+                                                    onChange={(e) => dispatch(updateVisit({ placeId: place.id, day: selectedDay, field: 'cost', value: Number(e.target.value) }))}
                                                     className="border border-pebble rounded-input px-2 py-1 text-xs w-24 outline-none focus:border-deep-ink focus:ring-0"
                                                 />
                                             </div>
