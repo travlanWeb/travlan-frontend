@@ -62,7 +62,8 @@ export default function CommunityPage() {
       travel.totalBudget >= budgetRange[0] && travel.totalBudget <= budgetRange[1]
     )
 
-    return result
+    // 최근 생성/수정된 순서로 정렬 (내림차순)
+    return [...result].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
   }, [displayedTravels, searchQuery, budgetRange, selectedTier, cheapThreshold, premiumThreshold])
 
   // 로그인한 사용자만 커뮤니티에 올라온 여행 목록을 가져옴
