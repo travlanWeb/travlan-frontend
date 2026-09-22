@@ -1,5 +1,7 @@
 import type { Place } from "../model/types";
 import { useBagStore } from "../../bag/model/useBagStore";
+import { useDispatch } from 'react-redux'
+import { removeVisitsByPlaceId } from "../../travel/model/visitSlice";
 import { Check } from 'lucide-react'
 
 interface PlaceListItemProps {
@@ -17,6 +19,14 @@ export default function PlaceListItem({ place, isSelected, onClick, onDetailClic
 
   const addItem = useBagStore((state) => state.addItem)
   const removeItem = useBagStore((state) => state.removeItem)
+  const dispatch = useDispatch()
+
+  // 여행가방에서 뺄 때, 그 장소로 만들어져 있던 타임라인 visit도 같이 지움
+  // (안 지우면 BagPanel에서 겪었던 것과 똑같이 금액/번호가 유령 데이터로 남음)
+  const handleRemoveFromBag = () => {
+    removeItem(place.id)
+    dispatch(removeVisitsByPlaceId(place.id))
+  }
 
   return (
     // 에어비앤비 스타일 - 테두리/그림자 없이 여백만으로 카드를 구분함
@@ -58,7 +68,7 @@ export default function PlaceListItem({ place, isSelected, onClick, onDetailClic
           <button
             onClick={(e) => {
               e.stopPropagation() // 버튼도 카드 안에 있어서 클릭 이벤트가 카드 onClick까지 전달됨 - 버블링 방지
-              isInBag ? removeItem(place.id) : addItem(place)
+              isInBag ? handleRemoveFromBag() : addItem(place)
             }}
             className={`flex-1 rounded-pill border border-pebble px-3 py-1 text-xs font-semibold transition-colors ${isInBag ? 'text-pure-white bg-deep-ink' : 'bg-pure-white text-deep-ink'
               }`}
