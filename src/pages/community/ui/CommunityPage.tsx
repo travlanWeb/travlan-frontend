@@ -41,7 +41,9 @@ export default function CommunityPage() {
   const [premiumThreshold, setPremiumThreshold] = useState(100)
   const [selectedTier, setSelectedTier] = useState<'전체' | '저렴' | '일반' | '프리미엄'>('전체')
 
-  const displayedTravels = isLoggedIn ? travels : MOCK_PREVIEW_CARDS
+  const displayedTravels = isLoggedIn
+    ? travels.filter((t) => !(t.originalId !== null && !t.edited))
+    : MOCK_PREVIEW_CARDS
 
   const searchedTravels = useMemo(() => {
     let result = displayedTravels
