@@ -1,8 +1,19 @@
 import { useBagStore } from "../../entities/bag/model/useBagStore";
+import { useDispatch } from "react-redux";
+import { removeVisitsByPlaceId } from "../../entities/travel/model/visitSlice";
 
 export default function BagPanel() {
   const items = useBagStore((state) => state.items)
   const removeItem = useBagStore((state) => state.removeItem)
+  const dispatch = useDispatch()
+
+  // 여행가방에서 장소를 뺄 때, 그 장소로 만들어둔 일정(visit)도 같이 지움.
+  // 안 그러면 사라진 장소를 가리키는 유령 일정이 남아서 예산 합산에는 계속 잡히고,
+  // 화면엔 안 보이는데 번호만 밀리는 버그가 생김
+  const handleRemove = (placeId: number) => {
+    removeItem(placeId)
+    dispatch(removeVisitsByPlaceId(placeId))
+  }
 
   return (
     <div>
@@ -28,7 +39,7 @@ export default function BagPanel() {
                   {item.category} · {item.price ? `${item.price.toLocaleString()}원` : '가격 미정'}
                 </p>
               </div>
-              <button onClick={() => removeItem(item.id)} className="text-cool-ash">
+              <button onClick={() => handleRemove(item.id)} className="text-cool-ash">
                 ✕
               </button>
             </div>
