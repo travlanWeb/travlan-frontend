@@ -375,13 +375,16 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                         {/* 하단 버튼 */}
                         {showActionButtons && (
                             <div className="border-t border-pebble px-8 py-5 shrink-0 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={handleLike}
-                                    className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
-                                >
-                                    찜하기
-                                </button>
+                                {/* 이미 찜한 여행(내 소유이면서, 리믹스하지 않은 찜한 복사본)일 때는 찜하기 버튼을 숨김 */}
+                                {!isUnedittedLikedCopy && (
+                                    <button
+                                        type="button"
+                                        onClick={handleLike}
+                                        className="rounded-pill border border-pebble bg-pure-white text-deep-ink px-6 py-2.5 text-sm font-semibold"
+                                    >
+                                        찜하기
+                                    </button>
+                                )}
                                 {/* 이 화면의 핵심 CTA라 clay-ember 사용. 텍스트는 흰색 대비(3.13:1)가 기준 미달이라
                                     deep-ink로 씀(대비 6.36:1) - 지난 라운드에 확정한 CTA 색 조합 규칙 */}
                                 <button
