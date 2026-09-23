@@ -82,7 +82,7 @@ export default function TravelDetailModal({ travelId, onClose, onNavigateToOrigi
                 }
 
                 // 경로/소요시간 조회 추가
-                const routesResponse = await api.get(`/travels/${travelId}/routes`, {timeout: 15000})
+                const routesResponse = await api.get(`/travels/${travelId}/routes`, {timeout: 15000}) // api 호출 시간 설정
                 setRoutes(routesResponse.data)
 
             } catch (err) {
