@@ -1,6 +1,7 @@
 # 트래블랜 (Travlan)
 
 🔗 **배포 링크**: https://travlan-frontend-ten.vercel.app/
+🔗 **구글 드라이브 링크**: https://drive.google.com/drive/folders/1PFfcFJQusLXVp0lp-6eyUzpOwUQdwRo3?usp=drive_link
 
 Travel + Plan. 예산 기반 국내 여행 플래너 서비스입니다. 지도에서 여행지를 필터링해 **여행가방**에 담고, **타임라인**으로 세부 일정을 구성할 수 있습니다.
 
